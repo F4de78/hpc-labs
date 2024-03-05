@@ -9,7 +9,9 @@
 // two pi
 #define PI2 6.28318530718
 #define R_ERROR 0.01
-#define N 10000
+#ifndef N
+    #define N 10000
+#endif
 #define FTYPE double
 #if FTYPE == double
   #define FSIZE 64
@@ -20,7 +22,9 @@
   #define SIN sinf
   #define COS cosf
 #endif
-
+#ifndef THREAD_NO
+    #define THREAD_NO 1
+#endif
 
 
 
@@ -32,7 +36,7 @@ int printResults(FTYPE* xr, FTYPE* xi);
 
 
 int main(int argc, char* argv[]){
-// size of input array
+    // size of input array
     printf("DFTW calculation with N = %d \n", N);
 
     FTYPE* xr = (FTYPE*) _mm_malloc (N *sizeof(FTYPE), FSIZE);
@@ -82,7 +86,7 @@ int DFT(int idft, FTYPE xr[restrict], FTYPE xi[restrict], FTYPE Xr_o[restrict], 
 
   //__assume_aligned(Xr_o, FSIZE);
   //__assume_aligned(Xi_o, FSIZE);
-  #pragma omp parallel for schedule(dynamic)
+  #pragma omp parallel for schedule(dynamic) num_threads(THREAD_NO)
   for (int k=0 ; k<N ; k++) {
 
     //__assume_aligned(xr, FSIZE);
