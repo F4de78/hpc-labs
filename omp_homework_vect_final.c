@@ -33,7 +33,6 @@ int printResults(FTYPE* xr, FTYPE* xi);
 
 int main(int argc, char* argv[]){
 // size of input array
-    
     printf("DFTW calculation with N = %d \n", N);
 
     FTYPE* xr = (FTYPE*) _mm_malloc (N *sizeof(FTYPE), FSIZE);
@@ -83,18 +82,17 @@ int DFT(int idft, FTYPE xr[restrict], FTYPE xi[restrict], FTYPE Xr_o[restrict], 
 
   //__assume_aligned(Xr_o, FSIZE);
   //__assume_aligned(Xi_o, FSIZE);
-  for (int k=0 ; k<N ; k++)
-  {
+  #pragma omp parallel for schedule(dynamic)
+  for (int k=0 ; k<N ; k++) {
 
-      //__assume_aligned(xr, FSIZE);
-      //__assume_aligned(xi, FSIZE);
-      for (int n=0 ; n<N ; n++)  {
-        // Real part of X[k]
-          Xr_o[k] += xr[n] * COS(n * k * PI2 / N) + idft*xi[n]*SIN(n * k * PI2 / N);
-          // Imaginary part of X[k]
-          Xi_o[k] += -idft*xr[n] * SIN(n * k * PI2 / N) + xi[n] * COS(n * k * PI2 / N);
-      }
-
+    //__assume_aligned(xr, FSIZE);
+    //__assume_aligned(xi, FSIZE);
+    for (int n=0 ; n<N ; n++) {
+      // Real part of X[k]
+      Xr_o[k] += xr[n] * COS(n * k * PI2 / N) + idft*xi[n]*SIN(n * k * PI2 / N);
+      // Imaginary part of X[k]
+      Xi_o[k] += -idft*xr[n] * SIN(n * k * PI2 / N) + xi[n] * COS(n * k * PI2 / N);
+    }
   }
 
   // normalize if you are doing IDFT
