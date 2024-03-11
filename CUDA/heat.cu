@@ -5,57 +5,23 @@
 // Simple define to index into a 1D array from 2D space
 #define I2D(row_len, c, r) ((r) * (row_len) + (c))
 
-//__global__ void step_kernel_mod(int ni, int nj, float fact, float *temp_in, float *temp_out)
-//{
-  // int i00, im10, ip10, i0m1, i0p1;
-  // float d2tdx2, d2tdy2;
+__global__ void step_kernel_mod(int ni, int nj, float fact, float *temp_in, float *temp_out) {
+  int i = blockIdx.x * blockDim.x + threadIdx.x;
+  int j = blockIdx.y * blockDim.y + threadIdx.y;
 
-  // int j = threadIdx.x + blockDim.x * blockIdx.x;
-  // int i = threadIdx.y + blockDim.y * blockIdx.y;
+  if (i >= 1 && i < ni - 1 && j >= 1 && j < nj - 1) {
+    int i00 = I2D(ni, i, j);
+    int im10 = I2D(ni, i - 1, j);
+    int ip10 = I2D(ni, i + 1, j);
+    int i0m1 = I2D(ni, i, j - 1);
+    int i0p1 = I2D(ni, i, j + 1);
 
-  // if(i>=ni-1 || j>=nj-1){
-  //   printf("altro bound %d %d\n",i,j );
-  //   return;
-  // }
-  // if(i==0 || j==0){
-  //   printf("bound %d %d\n",i,j );
-  //   return;
-  // }
+    float d2tdx2 = temp_in[im10] - 2 * temp_in[i00] + temp_in[ip10];
+    float d2tdy2 = temp_in[i0m1] - 2 * temp_in[i00] + temp_in[i0p1];
 
-  // printf("i:%d j:%d\n", i, j);
-  // // find indices into linear memory
-  // // for central point and neighbours
-  // i00 = I2D(ni, i, j);
-  // im10 = I2D(ni, i - 1, j);
-  // ip10 = I2D(ni, i + 1, j);
-  // i0m1 = I2D(ni, i, j - 1);
-  // i0p1 = I2D(ni, i, j + 1);
-
-  // // evaluate derivatives
-  // d2tdx2 = temp_in[im10] - 2 * temp_in[i00] + temp_in[ip10];
-  // d2tdy2 = temp_in[i0m1] - 2 * temp_in[i00] + temp_in[i0p1];
-
-  // // update temperatures
-  // temp_out[i00] = temp_in[i00] + fact * (d2tdx2 + d2tdy2);
-
-
-  __global__ void step_kernel_mod(int ni, int nj, float fact, float *temp_in, float *temp_out) {
-      int j = threadIdx.x + blockDim.x * blockIdx.x;
-      int i = threadIdx.y + blockDim.y * blockIdx.y;
-
-      if (i >= 1 && i < ni - 1 && j >= 1 && j < nj - 1) {
-          int i00 = I2D(ni, i, j);
-          int im10 = I2D(ni, i - 1, j);
-          int ip10 = I2D(ni, i + 1, j);
-          int i0m1 = I2D(ni, i, j - 1);
-          int i0p1 = I2D(ni, i, j + 1);
-
-          float d2tdx2 = temp_in[im10] - 2 * temp_in[i00] + temp_in[ip10];
-          float d2tdy2 = temp_in[i0m1] - 2 * temp_in[i00] + temp_in[i0p1];
-
-          temp_out[i00] = temp_in[i00] + fact * (d2tdx2 + d2tdy2);
-      }
+    temp_out[i00] = temp_in[i00] + fact * (d2tdx2 + d2tdy2);
   }
+}
 
 void step_kernel_ref(int ni, int nj, float fact, float *temp_in, float *temp_out)
 {
@@ -116,11 +82,6 @@ int main()
   cudaMemcpy(temp1, temp1_ref, size, cudaMemcpyHostToDevice);
   cudaMemcpy(temp2, temp2_ref, size, cudaMemcpyHostToDevice);
 
-//  printf("Temp1: 69420, Temp1ref: %f\n", temp1_ref[0]);
-
-//  cudaMemcpy(cpu_arr, temp1, size, cudaMemcpyDeviceToHost);
-//  printf("YAYAYAY %f %f\n", cpu_arr[0], cpu_arr[1]);
-
   // Execute the CPU-only reference version
   for (istep = 0; istep < nstep; istep++)
   {
@@ -133,36 +94,29 @@ int main()
   }
 
   // Execute the modified version using same data
-
   // https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/
-  
-  dim3 threadsPerBlock(32, 32); // 1024 threads per block
+  dim3 threadsPerBlock(16, 16); // 1024 threads per block
   dim3 numBlocks((ni + threadsPerBlock.x - 1) / threadsPerBlock.x, (nj + threadsPerBlock.y - 1) / threadsPerBlock.y);
   
   for (istep = 0; istep < nstep; istep++)
   {
     step_kernel_mod<<<numBlocks, threadsPerBlock>>>(ni, nj, tfac, temp1, temp2);
-    cudaDeviceSynchronize();
+
     // swap the temperature pointers
-    // cudaMemcpy(temp1, temp2, size, cudaMemcpyDeviceToHost);
     temp_tmp = temp1;
     temp1 = temp2;
     temp2 = temp_tmp;
-    //cudaMemcpy(temp1, temp2, size, cudaMemcpyDeviceToDevice);
-    
   }
-  //cudaDeviceSynchronize();
 
-  cudaMemcpy(cpu_arr, temp2, size, cudaMemcpyDeviceToHost);
+  cudaMemcpy(cpu_arr, temp1, size, cudaMemcpyDeviceToHost);
 
   float maxError = 0;
   // Output should always be stored in the temp1 and temp1_ref at this point
   for (int i = 0; i < ni * nj; ++i)
   {
-    // printf("Doing stuff at cell: %d\n", i);
-    //printf("era questo:%f %f\n", cpu_arr[i], temp1_ref[i]);
     if (abs(cpu_arr[i] - temp1_ref[i]) > maxError)
-    {
+    { 
+      printf("cpu_arr: %f - temp1_ref:%f\n",cpu_arr[i] ,temp1_ref[i] );
       maxError = abs(cpu_arr[i] - temp1_ref[i]);
     }
   }
