@@ -51,10 +51,20 @@ void step_kernel_ref(int ni, int nj, float fact, float *temp_in, float *temp_out
   }
 }
 
+void handle_error(cudaError_t err){
+  if(err != cudaSuccess){
+    fprintf(stderr,"GPUassert: %s\n", cudaGetErrorString(err));
+    exit(err);
+  }
+}
+
 int main()
 {
   int istep;
   int nstep = 200; // number of time steps
+  
+  float time;
+  cudaEvent_t start, stop;
 
   // Specify our 2D dimensions
   const int ni = 1000;
@@ -69,8 +79,9 @@ int main()
   temp2_ref = (float *)malloc(size);
   cpu_arr = (float *)malloc(size);
 
-  cudaMalloc((void **)&temp1, size);
-  cudaMalloc((void **)&temp2, size);
+  handle_error(cudaMalloc((void **)&temp1, size));
+
+  handle_error(cudaMalloc((void **)&temp2, size));
 
   // Initialize with random data
   for (int i = 0; i < ni * nj; ++i)
@@ -79,10 +90,13 @@ int main()
     temp1_ref[i] = temp2_ref[i] = rnd;
   }
 
-  cudaMemcpy(temp1, temp1_ref, size, cudaMemcpyHostToDevice);
-  cudaMemcpy(temp2, temp2_ref, size, cudaMemcpyHostToDevice);
+  handle_error(cudaMemcpy(temp1, temp1_ref, size, cudaMemcpyHostToDevice));
+  handle_error(cudaMemcpy(temp2, temp2_ref, size, cudaMemcpyHostToDevice));
 
   // Execute the CPU-only reference version
+  handle_error(cudaEventCreate(&start));
+  handle_error(cudaEventCreate(&stop));
+  handle_error(cudaEventRecord(start, 0));
   for (istep = 0; istep < nstep; istep++)
   {
     step_kernel_ref(ni, nj, tfac, temp1_ref, temp2_ref);
@@ -92,12 +106,19 @@ int main()
     temp1_ref = temp2_ref;
     temp2_ref = temp_tmp;
   }
+  handle_error(cudaEventRecord(stop, 0));
+  handle_error(cudaEventSynchronize(stop));
+  handle_error(cudaEventElapsedTime(&time, start, stop));
+  printf("Time CPU: %3.1f ms \n", time);
 
   // Execute the modified version using same data
   // https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/
   dim3 threadsPerBlock(16, 16); // 1024 threads per block
   dim3 numBlocks((ni + threadsPerBlock.x - 1) / threadsPerBlock.x, (nj + threadsPerBlock.y - 1) / threadsPerBlock.y);
   
+  handle_error(cudaEventCreate(&start));
+  handle_error(cudaEventCreate(&stop));
+  handle_error(cudaEventRecord(start, 0));
   for (istep = 0; istep < nstep; istep++)
   {
     step_kernel_mod<<<numBlocks, threadsPerBlock>>>(ni, nj, tfac, temp1, temp2);
@@ -107,8 +128,12 @@ int main()
     temp1 = temp2;
     temp2 = temp_tmp;
   }
+  handle_error(cudaEventRecord(stop, 0));
+  handle_error(cudaEventSynchronize(stop));
+  handle_error(cudaEventElapsedTime(&time, start, stop));
+  printf("Time GPU: %3.1f ms \n", time);
 
-  cudaMemcpy(cpu_arr, temp1, size, cudaMemcpyDeviceToHost);
+  handle_error(cudaMemcpy(cpu_arr, temp1, size, cudaMemcpyDeviceToHost));
 
   float maxError = 0;
   // Output should always be stored in the temp1 and temp1_ref at this point
@@ -133,8 +158,8 @@ int main()
 
   free(temp1_ref);
   free(temp2_ref);
-  cudaFree(temp1);
-  cudaFree(temp2);
+  handle_error(cudaFree(temp1));
+  handle_error(cudaFree(temp2));
 
   return 0;
 }
