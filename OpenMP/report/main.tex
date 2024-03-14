@@ -1,0 +1,154 @@
+\documentclass{article}
+
+\usepackage{natbib} % Required to change bibliography style to APA
+\usepackage{amsmath} % Required for some math elements 
+\usepackage{geometry}
+\usepackage[english]{babel}
+\usepackage{float}
+\usepackage {tikz}
+\usepackage{graphicx}
+\usepackage{comment}
+\usepackage[export]{adjustbox}
+\usetikzlibrary {positioning}
+\graphicspath{ {./images/} }
+\usepackage{hyperref}
+\usepackage{multicol}
+\usepackage{fancyvrb}
+\usepackage{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage{fancyvrb}
+\usepackage{xcolor}
+\usepackage{animate}
+\usepackage{array}
+\usepackage{minted}
+
+
+\newcommand{\ip}[1]{{\fontfamily{pcr}\selectfont #1}}
+\definecolor{LightGray}{gray}{0.9}
+
+\parskip=0pt plus 1pt
+\parindent=15pt
+
+\setlength\parskip{1em plus 0.1em minus 0.2em}
+\setlength\parindent{0pt}
+
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=22mm,
+ top=22mm,
+ }
+
+
+\title{High Performance Computing \\ Homework 1 - OpenMP report }
+\author{
+\begin{tabular}[t]{c@{\extracolsep{3em}}c@{\extracolsep{3em}}c} 
+Federico Fontana  & Filippo Siri & Marco Zucca \\
+s4835118@studenti.unige.it & s4819642@studenti.unige.it & s4828628@studenti.unige.it 
+\end{tabular}
+}
+\date{March 2024}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+\section{Task}
+\textit{The goal of this homework is to parallelise/vectorise the following program corresponding to an implementation of the Discrete Fourier Transform algorithm.}
+
+We will focus on these aspects: hotspot identification, possible vectorization issues, scalability using a proper number of thread
+
+\section{Setup}
+All the data present in this report was collected by running the programs on the workstations in laboratory 210. 
+\subsection{CPU}
+
+The workstation CPU is a 12th Gen Intel(R) Core(TM) i9-12900K, and running \\
+\verb!lscpu | grep -E '^Thread|^Core|^Socket|^CPU\('! we get:
+\begin{verbatim}
+CPU(s):                          24
+Thread(s) per core:              1
+Core(s) per socket:              16
+Socket(s):                       1
+\end{verbatim}
+
+It's worth mentionig that this CPU architecure has 2 tifferent kind of core: 8 'e-core' meant to be used for lighter tasks and for that reason they have hyperthreading factor equal to one, while the other 8 'p-core' are meant to handle heavier tasks and they have an hyperthreading factor equal to 2.
+
+We run also \verb!cat /proc/cpuinfo!:
+
+For more information: \href{https://ark.intel.com/content/www/us/en/ark/products/134599/intel-core-i9-12900k-processor-30m-cache-up-to-5-20-ghz.html}{Intel documentation}
+
+\subsection{Compiler}
+
+To compile the project we used Intel compiler \texttt{icc} with the following flags: 
+\begin{verbatim}
+    -fopenmp -std=c99 -O3 -march=alderlake
+\end{verbatim}
+It's worth mentioning that we could use \verb|-fast| instead of \verb|-O3|, but we had problems when we used Intel Advisor to evaluete vectorization performance.
+
+\section{Hotspot}
+Using Intel Advisor we found the location of the hotspot:
+
+%% --- inserire immagine
+
+We notice that the hotspot is the loop that computes the DFT:
+
+%% --- inserire snippet tipo riga 71
+
+As it is setup in the original code, the inner loop cannot be easily vectorized, as all the writes in the inner loop in a single outer cycle would write in the same memory location. This is why the compiler automatically swaps the inner and outer loop and vectorizes the inner one. This can be done because the operations inside the double loop only read from \verb|xr| and \verb|xi| and only write to \verb|Xr_o| and \verb|Xi_o|, meaning that we have no other dependencies that hamper the possible optmiziations.
+
+\section{Optimisation}
+\subsection{Vectorization}
+
+In the first optimization step we focused on the vectorization of the loops in the \verb|DFT| function. The compiler automatically swaps and vectorizes the inner loop, as we can verify with this line in the optimization report produced by \verb|icc|:
+\begin{verbatim}
+OOP BEGIN at omp_homework.c(73,7) inlined into omp_homework.c(43,5)
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at omp_homework.c(71,3) inlined into omp_homework.c(43,5)
+   <Peeled loop for vectorization>
+   LOOP END
+
+   LOOP BEGIN at omp_homework.c(71,3) inlined into omp_homework.c(43,5)
+      remark #15389: vectorization support: reference Xi_o[k] has unaligned access   [ omp_homework.c(77,11) ]
+      remark #15389: vectorization support: reference Xi_o[k] has unaligned access   [ omp_homework.c(77,11) ]
+      remark #15388: vectorization support: reference Xr_o[k] has aligned access   [ omp_homework.c(75,11) ]
+      remark #15388: vectorization support: reference Xr_o[k] has aligned access   [ omp_homework.c(75,11) ]
+      remark #15381: vectorization support: unaligned access used inside loop body
+      remark #15305: vectorization support: vector length 4
+      remark #15309: vectorization support: normalized vectorization overhead 0.104
+      remark #15301: PERMUTED LOOP WAS VECTORIZED
+      remark #15442: entire loop may be executed in remainder
+      remark #15448: unmasked aligned unit stride loads: 1 
+      remark #15449: unmasked aligned unit stride stores: 1 
+      remark #15450: unmasked unaligned unit stride loads: 1 
+      remark #15451: unmasked unaligned unit stride stores: 1 
+      remark #15475: --- begin vector cost summary ---
+      remark #15476: scalar cost: 555 
+      remark #15477: vector cost: 62.500 
+      remark #15478: estimated potential speedup: 8.850 
+      remark #15482: vectorized math library calls: 2 
+      remark #15486: divides: 2 
+      remark #15487: type converts: 2 
+      remark #15488: --- end vector cost summary ---
+   LOOP END
+
+   LOOP BEGIN at omp_homework.c(71,3) inlined into omp_homework.c(43,5)
+   <Remainder loop for vectorization>
+   LOOP END
+LOOP END
+\end{verbatim}
+
+From the report we can also notice that the elements inside \verb|Xi_o| are not aligned, and could thus decrease performance. To solve this problem, we decided to call \verb|_mm_malloc| and \verb|_mm_free| instead of the regular versions of the functions. Furthermore, we decided to allow the compiler to assume that all the arrays used in the function are aligned by adding four calls to \verb|_assume_aligned|. This showed no performance improvements in the specific case of this program, since the function is inlined in \verb|main| (TODO: aggiungere ref da report), but could be used by the compiler in other scenarios to apply the same optimizations.
+
+The same holds for the \verb|[restrict]| we added on the function parameters. This has no effect in our specific scenario, but allows the compiler to assume that the pointers do not alias, and as such allows it to vectorize the inner loop, since it can assume that we're not reading and writing in the same memory position.
+
+\subsection{Parallelization}
+
+\section{Results}
+
+\section{Conclusion}
+
+\end{document}

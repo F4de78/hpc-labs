@@ -1,0 +1,12 @@
+# hash file version: 3
+12	2	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_baseline	6202	6289	/VM/stud/S4819642/hpc-labs-master/OpenMP/src/omp_homework.c	71	87	4cd64d4af9a509913ca10da61017dfc5	1	1	0	0	0
+13	5	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_baseline	5859	6501	/VM/stud/S4819642/hpc-labs-master/OpenMP/src/omp_homework.c	73	650	4cd64d4af9a509913ca10da61017dfc5	0	1	0	0	0
+14	7	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_baseline	6928	7016	/VM/stud/S4819642/hpc-labs-master/OpenMP/src/omp_homework.c	71	88	4cd64d4af9a509913ca10da61017dfc5	1	1	0	0	0
+15	9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_baseline	6573	7241	/VM/stud/S4819642/hpc-labs-master/OpenMP/src/omp_homework.c	73	676	4cd64d4af9a509913ca10da61017dfc5	0	1	0	0	0
+16	10	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_baseline	5939		/VM/stud/S4819642/hpc-labs-master/OpenMP/src/omp_homework.c	71	93	4cd64d4af9a509913ca10da61017dfc5	1	1	0	0	0
+17	11	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_baseline	6369		/VM/stud/S4819642/hpc-labs-master/OpenMP/src/omp_homework.c	71	94	4cd64d4af9a509913ca10da61017dfc5	0	1	0	0	0
+18	12	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_baseline	6656		/VM/stud/S4819642/hpc-labs-master/OpenMP/src/omp_homework.c	71	92	4cd64d4af9a509913ca10da61017dfc5	1	1	0	0	0
+19	13	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_baseline	7103		/VM/stud/S4819642/hpc-labs-master/OpenMP/src/omp_homework.c	71	97	4cd64d4af9a509913ca10da61017dfc5	0	1	0	0	0
+20	20	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_baseline	5939	6032,6289,6463	/VM/stud/S4819642/hpc-labs-master/OpenMP/src/omp_homework.c	71	274	4cd64d4af9a509913ca10da61017dfc5	1	1	0	0	0
+21	21	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_baseline	6656	6748,7016,7200	/VM/stud/S4819642/hpc-labs-master/OpenMP/src/omp_homework.c	71	277	4cd64d4af9a509913ca10da61017dfc5	1	1	0	0	0
+22	22	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_baseline	5859	6501,7241	/VM/stud/S4819642/hpc-labs-master/OpenMP/src/omp_homework.c	73	1326	4cd64d4af9a509913ca10da61017dfc5	0	1	0	0	0

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- <!DOCTYPE IntelParallelAdvisorSummaryCollection SYSTEM  "IntelParallelAdvisorSummaryCollection.dtd"> -->
+
+<IntelParallelAdvisorSummary version="" 
+                             kind="DATAKIND_SURVEY_EX" >
+  <hotspot filename="/VM/stud/S4819642/hpc-labs-master/OpenMP/src/omp_homework.c"
+           line_no="71"
+           routine="DFT"
+           is_vectorized="1"
+           self_time="9.599868E-02"
+           total_time="0.000000E+00"
+           trip_counts=""
+           func_instance="21"
+           priority="0">
+           <recommendation id="rec_div_c" title="Enable the use of approximate division instructions" confidence="1" gain="-1"/>
+  </hotspot>
+  <hotspot filename="/VM/stud/S4819642/hpc-labs-master/OpenMP/src/omp_homework.c"
+           line_no="71"
+           routine="DFT"
+           is_vectorized="1"
+           self_time="9.599868E-02"
+           total_time="0.000000E+00"
+           trip_counts=""
+           func_instance="21"
+           priority="0">
+           <recommendation id="rec_type_conversions_smallest_c" title="Use the smallest data type" confidence="1" gain="-1"/>
+  </hotspot>
+  <hotspot filename="/VM/stud/S4819642/hpc-labs-master/OpenMP/src/omp_homework.c"
+           line_no="71"
+           routine="DFT"
+           is_vectorized="1"
+           self_time="8.000273E-02"
+           total_time="0.000000E+00"
+           trip_counts=""
+           func_instance="20"
+           priority="0">
+           <recommendation id="rec_div_c" title="Enable the use of approximate division instructions" confidence="1" gain="-1"/>
+  </hotspot>
+  <hotspot filename="/VM/stud/S4819642/hpc-labs-master/OpenMP/src/omp_homework.c"
+           line_no="71"
+           routine="DFT"
+           is_vectorized="1"
+           self_time="8.000273E-02"
+           total_time="0.000000E+00"
+           trip_counts=""
+           func_instance="20"
+           priority="0">
+           <recommendation id="rec_type_conversions_smallest_c" title="Use the smallest data type" confidence="1" gain="-1"/>
+  </hotspot>
+</IntelParallelAdvisorSummary >

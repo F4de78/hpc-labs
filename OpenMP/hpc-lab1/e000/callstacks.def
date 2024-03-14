@@ -1,0 +1,179 @@
+# callstacks file version: 8
+#    rowid	    parent	       rva	 loop	 system	                                function	binary	instance_start_rva	instance_size	instance_end_rva	finst_rowid	roi	is_inlined	jit_method_id	tripcounts_roi	flops_roi	cachesim_roi	data_transfer_roi	projection_roi
+         1	        -1	      4656	    0	      0	                                  _start	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4656	43	0	1	0	0	0	0	0	0	0	0
+         2	        -1	      4697	    0	      0	                                  _start	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4656	43	0	1	0	0	0	0	0	0	0	0
+         3	        76	    146697	    1	      1	 [Loop at line 261 in __libc_start_main]	/lib/x86_64-linux-gnu/libc.so.6	146561,146800	223,140	0	394	0	0	0	0	0	0	0	0
+         4	        78	      5437	    0	      0	                                     DFT	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	5392,7666,9517,9966	277,1410,441,18	0	3	0	1	0	0	0	0	0	0
+         5	        68	    835305	    0	      1	            __kmp_acquire_bootstrap_lock	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	835286	20	0	27	0	1	0	0	0	0	0	0
+         6	        70	    800894	    0	      1	_INTERNAL77814fad::__kmp_acquire_ticket_lock_timed_template	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	800833,800842,800850,801358	3,5,496,50	0	29	0	1	0	0	0	0	0	0
+         7	         6	    270289	    0	      1	_INTERNALb4e99691::__kmp_itt_fsync_acquired_init_3_0	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	270208	128	0	31	0	0	0	0	0	0	0	0
+         8	         7	    244487	    0	      1	                   __kmp_itt_init_ittlib	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	242944	3456	0	32	0	0	0	0	0	0	0	0
+         9	         8	     77575	    0	      1	                          __itt_api_init	/opt/intel/oneapi/advisor/2023.2.0/lib64/runtime/libittnotify_collector.so	77456	816	0	2	0	0	0	0	0	0	0	0
+        10	         9	     37837	    0	      1	                             func@0x9210	/opt/intel/oneapi/advisor/2023.2.0/lib64/runtime/libittnotify_collector.so	37392	480	0	11	0	0	0	0	0	0	0	0
+        11	        10	     79307	    0	      1	                            func@0x13550	/opt/intel/oneapi/advisor/2023.2.0/lib64/runtime/libittnotify_collector.so	79184	176	0	21	0	0	0	0	0	0	0	0
+        12	        78	      5541	    0	      0	                                     DFT	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	5392,7666,9517,9966	277,1410,441,18	0	3	0	1	0	0	0	0	0	0
+        13	        12	    564514	    0	      1	                           [OpenMP fork]	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	564096	576	0	33	0	0	0	0	0	0	0	0
+        14	        72	    859299	    0	      1	_INTERNAL49d8b4ea::__kmp_serial_fork_call	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	859037,859250,863135,863558	191,309,412,766	0	34	0	1	0	0	0	0	0	0
+        15	        14	   1455250	    0	      1	                  __kmp_invoke_microtask	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	1455104	176	0	36	0	0	0	0	0	0	0	0
+        16	        85	      8695	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+        17	        16	     13602	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        18	        93	      8649	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+        19	        18	     13562	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        20	       101	      8680	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+        21	        16	     13694	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        22	        18	     13544	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        23	        18	     13657	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        24	        18	     13472	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        25	        18	     13572	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        26	        18	     13582	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        27	        18	     13612	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        28	        18	     13508	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        29	        18	     13467	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        30	        18	     13526	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        31	        18	     13433	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        32	        18	     13552	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        33	        16	     13366	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        34	        18	     13490	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        35	       109	      8675	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+        36	        16	     13316	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        37	        18	     13694	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        38	        18	     13498	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        39	        18	     13316	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        40	       117	      5804	    0	      0	                                     DFT	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	5669,6256,9076,9958	262,1410,441,8	0	9	0	1	0	0	0	0	0	0
+        41	        40	    564514	    0	      1	                           [OpenMP fork]	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	564096	576	0	33	0	0	0	0	0	0	0	0
+        42	        74	    859299	    0	      1	_INTERNAL49d8b4ea::__kmp_serial_fork_call	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	859037,859250,863135,863558	191,309,412,766	0	34	0	1	0	0	0	0	0	0
+        43	        42	   1455250	    0	      1	                  __kmp_invoke_microtask	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	1455104	176	0	36	0	0	0	0	0	0	0	0
+        44	       123	      7239	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+        45	        44	     13258	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        46	        44	     13405	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        47	        44	     13490	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        48	       132	      7270	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+        49	        44	     13526	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        50	        44	     13612	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        51	        44	     13453	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        52	        44	     13508	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        53	       141	      7285	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+        54	        53	     13612	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        55	        44	     13562	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        56	        53	     13366	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        57	        44	     13694	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        58	        53	     13316	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        59	       150	      7265	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+        60	       159	      7317	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+        61	        44	     13544	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        62	       168	      7280	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+        63	        53	     13657	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        64	        44	     13316	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        65	        53	     13544	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        66	        53	     13232	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        67	        44	     13472	    0	      0	                       __svml_sincos4_l9	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	13232	1923	0	8	0	0	0	0	0	0	0	0
+        68	         4	    835286	    0	      1	          __kmp_get_global_thread_id_reg	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	835264	192	0	28	0	0	0	0	0	0	0	0
+        69	         4	    835305	    0	      1	          __kmp_get_global_thread_id_reg	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	835264	192	0	28	0	0	0	0	0	0	0	0
+        70	         5	    800833	    0	      1	               __kmp_acquire_ticket_lock	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	800832	576	0	30	0	0	0	0	0	0	0	0
+        71	         5	    800894	    0	      1	               __kmp_acquire_ticket_lock	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	800832	576	0	30	0	0	0	0	0	0	0	0
+        72	        13	    859037	    0	      1	                         __kmp_fork_call	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	858240	11904	0	35	0	0	0	0	0	0	0	0
+        73	        13	    859299	    0	      1	                         __kmp_fork_call	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	858240	11904	0	35	0	0	0	0	0	0	0	0
+        74	        41	    859037	    0	      1	                         __kmp_fork_call	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	858240	11904	0	35	0	0	0	0	0	0	0	0
+        75	        41	    859299	    0	      1	                         __kmp_fork_call	/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin/libiomp5.so	858240	11904	0	35	0	0	0	0	0	0	0	0
+        76	         2	    146561	    0	      1	                       __libc_start_main	/lib/x86_64-linux-gnu/libc.so.6	146464	476	0	396	0	0	0	0	0	0	0	0
+        77	         2	    146697	    0	      1	                       __libc_start_main	/lib/x86_64-linux-gnu/libc.so.6	146464	476	0	396	0	0	0	0	0	0	0	0
+        78	         3	      5392	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+        79	         3	      5437	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+        80	         3	      5541	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+        81	        15	      7993	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+        82	        81	      8167	    1	      0	               [Loop at line 89 in main]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7993,8095,9966	70,981,8	8063	7	0	0	0	0	0	0	0	0
+        83	        82	      5392	    1	      0	               [Loop at line 90 in main]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8167,9966	904,8	9071	6	0	0	0	0	0	0	0	0
+        84	        83	      8613	    0	      0	                                     DFT	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	5392,7666,9517,9966	277,1410,441,18	0	3	0	1	0	0	0	0	0	0
+        85	        84	      8695	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8261,8613,8898	133,124,128	8394,8737,9026	6014	0	0	0	0	0	0	0	0
+        86	        83	      8695	    0	      0	                                     DFT	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	5392,7666,9517,9966	277,1410,441,18	0	3	0	1	0	0	0	0	0	0
+        87	        15	      8695	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+        88	        85	      8695	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+        89	        85	      8649	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+        90	        85	      8262	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8261	133	0	16	0	0	0	0	0	0	0	0
+        91	        85	      8614	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+        92	        85	      8899	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8898	128	0	17	0	0	0	0	0	0	0	0
+        93	        84	      8649	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8261,8613,8898	133,124,128	8394,8737,9026	6014	0	0	0	0	0	0	0	0
+        94	        83	      8649	    0	      0	                                     DFT	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	5392,7666,9517,9966	277,1410,441,18	0	3	0	1	0	0	0	0	0	0
+        95	        15	      8649	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+        96	        93	      8695	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+        97	        93	      8649	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+        98	        93	      8262	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8261	133	0	16	0	0	0	0	0	0	0	0
+        99	        93	      8614	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+       100	        93	      8899	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8898	128	0	17	0	0	0	0	0	0	0	0
+       101	        84	      8680	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8261,8613,8898	133,124,128	8394,8737,9026	6014	0	0	0	0	0	0	0	0
+       102	        83	      8680	    0	      0	                                     DFT	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	5392,7666,9517,9966	277,1410,441,18	0	3	0	1	0	0	0	0	0	0
+       103	        15	      8680	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+       104	       101	      8695	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+       105	       101	      8649	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+       106	       101	      8262	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8261	133	0	16	0	0	0	0	0	0	0	0
+       107	       101	      8614	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+       108	       101	      8899	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8898	128	0	17	0	0	0	0	0	0	0	0
+       109	        84	      8675	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8261,8613,8898	133,124,128	8394,8737,9026	6014	0	0	0	0	0	0	0	0
+       110	        83	      8675	    0	      0	                                     DFT	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	5392,7666,9517,9966	277,1410,441,18	0	3	0	1	0	0	0	0	0	0
+       111	        15	      8675	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+       112	       109	      8695	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+       113	       109	      8649	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+       114	       109	      8262	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8261	133	0	16	0	0	0	0	0	0	0	0
+       115	       109	      8614	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8613	124	8737	5	0	0	0	0	0	0	0	0
+       116	       109	      8899	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	8898	128	0	17	0	0	0	0	0	0	0	0
+       117	         3	      5669	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+       118	         3	      5804	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+       119	        43	      5669	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+       120	       119	      6583	    0	      0	                                     DFT	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	5669,6256,9076,9958	262,1410,441,8	0	9	0	1	0	0	0	0	0	0
+       121	       120	      6757	    1	      0	                [Loop at line 89 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	6583,6685	70,981	6653,9958	13	0	0	0	0	0	0	0	0
+       122	       121	      7203	    1	      0	                [Loop at line 90 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	6757	904	9958,7661	12	0	0	0	0	0	0	0	0
+       123	       122	      7239	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	6851,7203,7488	133,124,128	6984,7327,7616	6015	0	0	0	0	0	0	0	0
+       124	       119	      7239	    0	      0	                                     DFT	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	5669,6256,9076,9958	262,1410,441,8	0	9	0	1	0	0	0	0	0	0
+       125	        43	      7239	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+       126	       123	      7239	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       127	       123	      7270	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       128	       123	      7317	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       129	       123	      6852	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	6851	133	0	14	0	0	0	0	0	0	0	0
+       130	       123	      7204	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       131	       123	      7489	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7488	128	0	15	0	0	0	0	0	0	0	0
+       132	       122	      7270	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	6851,7203,7488	133,124,128	6984,7327,7616	6015	0	0	0	0	0	0	0	0
+       133	       119	      7270	    0	      0	                                     DFT	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	5669,6256,9076,9958	262,1410,441,8	0	9	0	1	0	0	0	0	0	0
+       134	        43	      7270	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+       135	       132	      7239	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       136	       132	      7270	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       137	       132	      7317	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       138	       132	      6852	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	6851	133	0	14	0	0	0	0	0	0	0	0
+       139	       132	      7204	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       140	       132	      7489	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7488	128	0	15	0	0	0	0	0	0	0	0
+       141	       122	      7285	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	6851,7203,7488	133,124,128	6984,7327,7616	6015	0	0	0	0	0	0	0	0
+       142	       119	      7285	    0	      0	                                     DFT	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	5669,6256,9076,9958	262,1410,441,8	0	9	0	1	0	0	0	0	0	0
+       143	        43	      7285	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+       144	       141	      7239	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       145	       141	      7270	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       146	       141	      7317	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       147	       141	      6852	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	6851	133	0	14	0	0	0	0	0	0	0	0
+       148	       141	      7204	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       149	       141	      7489	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7488	128	0	15	0	0	0	0	0	0	0	0
+       150	       122	      7265	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	6851,7203,7488	133,124,128	6984,7327,7616	6015	0	0	0	0	0	0	0	0
+       151	       119	      7265	    0	      0	                                     DFT	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	5669,6256,9076,9958	262,1410,441,8	0	9	0	1	0	0	0	0	0	0
+       152	        43	      7265	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+       153	       150	      7239	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       154	       150	      7270	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       155	       150	      7317	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       156	       150	      6852	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	6851	133	0	14	0	0	0	0	0	0	0	0
+       157	       150	      7204	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       158	       150	      7489	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7488	128	0	15	0	0	0	0	0	0	0	0
+       159	       122	      7317	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	6851,7203,7488	133,124,128	6984,7327,7616	6015	0	0	0	0	0	0	0	0
+       160	       119	      7317	    0	      0	                                     DFT	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	5669,6256,9076,9958	262,1410,441,8	0	9	0	1	0	0	0	0	0	0
+       161	        43	      7317	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+       162	       159	      7239	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       163	       159	      7270	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       164	       159	      7317	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       165	       159	      6852	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	6851	133	0	14	0	0	0	0	0	0	0	0
+       166	       159	      7204	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       167	       159	      7489	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7488	128	0	15	0	0	0	0	0	0	0	0
+       168	       122	      7280	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	6851,7203,7488	133,124,128	6984,7327,7616	6015	0	0	0	0	0	0	0	0
+       169	       119	      7280	    0	      0	                                     DFT	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	5669,6256,9076,9958	262,1410,441,8	0	9	0	1	0	0	0	0	0	0
+       170	        43	      7280	    0	      0	                                    main	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	4896	5088	0	4	0	0	0	0	0	0	0	0
+       171	       168	      7239	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       172	       168	      7270	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       173	       168	      7317	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       174	       168	      6852	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	6851	133	0	14	0	0	0	0	0	0	0	0
+       175	       168	      7204	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7203	124	7327	10	0	0	0	0	0	0	0	0
+       176	       168	      7489	    1	      0	                [Loop at line 94 in DFT]	/VM/stud/S4819642/hpc-labs-master/OpenMP/bin/dft_opt	7488	128	0	15	0	0	0	0	0	0	0	0
+       177	        -1	         0	    0	      0	                [Unknown stack frame(s)]	n/a	0	0	0	6025	0	0	0	0	0	0	0	0
