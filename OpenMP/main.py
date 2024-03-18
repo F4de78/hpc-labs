@@ -1,19 +1,14 @@
 import subprocess
 import itertools as it
 import logging
-import seaborn as sns
-import pandas as pd
-import matplotlib.pyplot as plt
 import csv
 
 NS = [2_000, 4_000, 8_000, 16_000, 32_000, 48_000]
 THREAD_NOS = [1, 2, 4, 8, 16, 24]
-# COMP = "clang"
-CFLAGS = ["-xHost", "-qopenmp", "-std=c99", "-fast"]
+RUNS = 10
 
 COMP = "icc"
-CFLAGS = ["-fopenmp", "-std=c99", "-O3"]
-sns.set_theme()
+CFLAGS = ["-fopenmp", "-std=c99", "-O3", "-xHost"]
 
 def compile(in_file_path: str, out_file_path: str, n: int, thread_no: int):
     logging.info(
@@ -36,28 +31,25 @@ def compile(in_file_path: str, out_file_path: str, n: int, thread_no: int):
     res = subprocess.run([f"./bin/{out_file_path}"], stdout=subprocess.PIPE)
     timing = res.stdout.decode("utf-8").split("\n")[1]
     timing = timing[len("DFTW computation in ") : -len(" seconds")]
-    print(f"\n\nTIMING: {float(timing)}\n\n")
+    print(f"N={n} THREAD_NO={thread_no} TIMING: {float(timing)}")
     return float(timing)
-
-def plot(data: list):
-    plt.xticks(THREAD_NOS)
-    for n in NS:
-        print(n)
-        df = pd.DataFrame(data[n], columns =['Threads', 'Time'])
-        time_plot = sns.lineplot(data=df, x="Threads", y="Time",label=n, marker='o', markers=True, dashes=False)
-    fig = time_plot.get_figure()
-    fig.savefig("out.pdf") 
-
-    #sns.lineplot(df)
 
 def main():
     with open('data.csv', 'w',  newline='') as csvfile:
-        fieldnames = ['n', 'thread_no', 'time']
+        fieldnames = ['run', 'n', 'thread_no', 'time', 'speedup', 'efficiency']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
+        time = dict()
         for n, thread_no in it.product(NS, THREAD_NOS):
-            writer.writerow({'n':n, 'thread_no':thread_no, 'time':compile("src/omp_homework_vect_final.c", f"main_{n}_{thread_no}", n, thread_no)})
+            for run in range(1, RUNS + 1):
+                curr_time = compile("src/omp_homework_vect_final.c", f"main_{n}_{thread_no}", n, thread_no)
+                if thread_no == 1:
+                    time[run] = curr_time
+                    speedup = 1
+                else:
+                    speedup = sum(time.values()) / curr_time
+                efficiency = speedup / thread_no
+                writer.writerow({'run': run, 'n':n, 'thread_no':thread_no, 'time':curr_time, 'speedup':speedup, 'efficiency': efficiency})
                
-
 if __name__ == "__main__":
     main()
