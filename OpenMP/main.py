@@ -8,7 +8,7 @@ THREAD_NOS = [1, 2, 4, 8, 16, 24]
 RUNS = 10
 
 COMP = "icc"
-CFLAGS = ["-fopenmp", "-std=c99", "-O3", "-xHost"]
+CFLAGS = ["-fopenmp", "-std=c99", "-O3", "-march=alderlake"]
 
 def compile(in_file_path: str, out_file_path: str, n: int, thread_no: int):
     logging.info(

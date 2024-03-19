@@ -1,12 +1,9 @@
-
 #include "stdio.h" // printf
 #include "stdlib.h" // malloc and rand for instance. Rand not thread safe!
 #include "time.h"   // time(0) to get random seed
 #include "math.h"  // sine and cosine
 #include "omp.h"   // openmp library like timing
 
-
-// two pi
 #define PI2 6.28318530718
 #define R_ERROR 0.01
 #ifndef N
@@ -92,10 +89,13 @@ int DFT(int idft, FTYPE xr[restrict], FTYPE xi[restrict], FTYPE Xr_o[restrict], 
   #pragma omp parallel for schedule(dynamic) num_threads(THREAD_NO)
   for (int k=0 ; k<N ; k++) {
     for (int n=0 ; n<N ; n++) {
+      FTYPE c = COS(n * k * PI2 / N);
+      FTYPE s = SIN(n * k * PI2 / N);
+
       // Real part of X[k]
-      Xr_o[k] += xr[n] * COS(n * k * PI2 / N) + idft*xi[n]*SIN(n * k * PI2 / N);
+      Xr_o[k] += xr[n] * c + idft*xi[n]*s;
       // Imaginary part of X[k]
-      Xi_o[k] += -idft*xr[n] * SIN(n * k * PI2 / N) + xi[n] * COS(n * k * PI2 / N);
+      Xi_o[k] += -idft*xr[n] * s + xi[n] * c;
     }
   }
 
@@ -120,11 +120,11 @@ int fillInput(FTYPE* xr, FTYPE* xi){
     rand();
   for(n=0; n < N;n++){
      // Generate random discrete-time signal x in range (-1,+1)
-     //xr[n] = ((FTYPE)(2.0 * rand()) / RAND_MAX) - 1.0;
-     //xi[n] = ((FTYPE)(2.0 * rand()) / RAND_MAX) - 1.0;
+     xr[n] = ((FTYPE)(2.0 * rand()) / RAND_MAX) - 1.0;
+     xi[n] = ((FTYPE)(2.0 * rand()) / RAND_MAX) - 1.0;
      // constant real signal
-     xr[n] = 1.0;
-     xi[n] = 0.0;
+     //xr[n] = 1.0;
+     //xi[n] = 0.0;
   }
   return 1;
 }
