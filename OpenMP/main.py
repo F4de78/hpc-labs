@@ -41,13 +41,14 @@ def main():
         writer.writeheader()
         time = dict()
         for n, thread_no in it.product(NS, THREAD_NOS):
+            print(time)
             for run in range(1, RUNS + 1):
                 curr_time = compile("src/omp_homework_vect_final.c", f"main_{n}_{thread_no}", n, thread_no)
                 if thread_no == 1:
                     time[run] = curr_time
                     speedup = 1
                 else:
-                    speedup = sum(time.values()) / curr_time
+                    speedup = (sum(time.values())/RUNS) / curr_time
                 efficiency = speedup / thread_no
                 writer.writerow({'run': run, 'n':n, 'thread_no':thread_no, 'time':curr_time, 'speedup':speedup, 'efficiency': efficiency})
                
