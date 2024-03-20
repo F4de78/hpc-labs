@@ -5,6 +5,20 @@
 // Simple define to index into a 1D array from 2D space
 #define I2D(row_len, c, r) ((r) * (row_len) + (c))
 
+#ifndef NI
+    #define NI 1000
+#endif
+#ifndef NJ
+    #define NJ 1000
+#endif
+#ifndef THREADS_X
+    #define THREADS_X 16
+#endif
+#ifndef THREADS_Y
+    #define THREADS_Y 16
+#endif
+
+
 __global__ void step_kernel_mod(int ni, int nj, float fact, float *temp_in, float *temp_out) {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
   int j = blockIdx.y * blockDim.y + threadIdx.y;
@@ -67,8 +81,8 @@ int main()
   cudaEvent_t start, stop;
 
   // Specify our 2D dimensions
-  const int ni = 1000;
-  const int nj = 1000;
+  const int ni = NI;
+  const int nj = NJ;
   float tfac = 8.418e-5; // thermal diffusivity of silver
 
   float *temp1_ref, *temp2_ref, *temp1, *temp2, *temp_tmp, *cpu_arr;
@@ -113,7 +127,7 @@ int main()
 
   // Execute the modified version using same data
   // https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/
-  dim3 threadsPerBlock(16, 16); // 1024 threads per block
+  dim3 threadsPerBlock(THREADS_X, THREADS_Y); // 1024 threads per block
   dim3 numBlocks((ni + threadsPerBlock.x - 1) / threadsPerBlock.x, (nj + threadsPerBlock.y - 1) / threadsPerBlock.y);
   
   handle_error(cudaEventCreate(&start));
@@ -141,7 +155,7 @@ int main()
   {
     if (abs(cpu_arr[i] - temp1_ref[i]) > maxError)
     { 
-      printf("cpu_arr: %f - temp1_ref:%f\n",cpu_arr[i] ,temp1_ref[i] );
+      //printf("cpu_arr: %f - temp1_ref:%f\n",cpu_arr[i] ,temp1_ref[i] );
       maxError = abs(cpu_arr[i] - temp1_ref[i]);
     }
   }

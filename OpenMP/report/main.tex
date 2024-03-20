@@ -86,66 +86,129 @@ To compile the project we used Intel compiler \texttt{icc} with the following fl
 \begin{verbatim}
     -fopenmp -std=c99 -O3 -march=alderlake
 \end{verbatim}
-It's worth mentioning that we could use \verb|-fast| instead of \verb|-O3|, but we had problems when we used Intel Advisor to evaluete vectorization performance.
+It's worth mentioning that we could use \verb|-fast| instead of \verb|-O3 -march=alderlake|, but we had problems when we used Intel Advisor to evaluete vectorization performance.
 
 \section{Hotspot}
 Using Intel Advisor we found the location of the hotspot:
 
-%% --- inserire immagine
+%% ---TODO inserire immagine
 
 We notice that the hotspot is the loop that computes the DFT:
 
-%% --- inserire snippet tipo riga 71
+%% ---TODO inserire snippet tipo riga 71
 
 As it is setup in the original code, the inner loop cannot be easily vectorized, as all the writes in the inner loop in a single outer cycle would write in the same memory location. This is why the compiler automatically swaps the inner and outer loop and vectorizes the inner one. This can be done because the operations inside the double loop only read from \verb|xr| and \verb|xi| and only write to \verb|Xr_o| and \verb|Xi_o|, meaning that we have no other dependencies that hamper the possible optmiziations.
 
 \section{Optimisation}
+
+\subsection{Caching}
+
+The first implementation that we decided to make was to try to cache the results of the computations of the \verb|sin| and \verb|cos| functions, since both results are used two times for each loop. This was done by creating two variables at the beginning of the inner loop as such:
+\begin{verbatim}
+for (int n=0 ; n<N ; n++) {
+      FTYPE c = COS(n * k * PI2 / N);
+      FTYPE s = SIN(n * k * PI2 / N);
+
+      // Real part of X[k]
+      Xr_o[k] += xr[n] * c + idft*xi[n]*s;
+      // Imaginary part of X[k]
+      Xi_o[k] += -idft*xr[n] * s + xi[n] * c;
+}
+\end{verbatim}
+
+This led to an experimental improvement in performance of approximately 33\%.
+
 \subsection{Vectorization}
 
 In the first optimization step we focused on the vectorization of the loops in the \verb|DFT| function. The compiler automatically swaps and vectorizes the inner loop, as we can verify with this line in the optimization report produced by \verb|icc|:
 \begin{verbatim}
-OOP BEGIN at omp_homework.c(73,7) inlined into omp_homework.c(43,5)
+LOOP BEGIN at src/omp_homework_vect_final.c(89,3) inlined into src/omp_homework_vect_final.c(56,5)
    remark #15542: loop was not vectorized: inner loop was already vectorized
 
-   LOOP BEGIN at omp_homework.c(71,3) inlined into omp_homework.c(43,5)
-   <Peeled loop for vectorization>
-   LOOP END
+   LOOP BEGIN at src/omp_homework_vect_final.c(89,3) inlined into src/omp_homework_vect_final.c(56,5)
+      remark #15542: loop was not vectorized: inner loop was already vectorized
 
-   LOOP BEGIN at omp_homework.c(71,3) inlined into omp_homework.c(43,5)
-      remark #15389: vectorization support: reference Xi_o[k] has unaligned access   [ omp_homework.c(77,11) ]
-      remark #15389: vectorization support: reference Xi_o[k] has unaligned access   [ omp_homework.c(77,11) ]
-      remark #15388: vectorization support: reference Xr_o[k] has aligned access   [ omp_homework.c(75,11) ]
-      remark #15388: vectorization support: reference Xr_o[k] has aligned access   [ omp_homework.c(75,11) ]
-      remark #15381: vectorization support: unaligned access used inside loop body
-      remark #15305: vectorization support: vector length 4
-      remark #15309: vectorization support: normalized vectorization overhead 0.104
-      remark #15301: PERMUTED LOOP WAS VECTORIZED
-      remark #15442: entire loop may be executed in remainder
-      remark #15448: unmasked aligned unit stride loads: 1 
-      remark #15449: unmasked aligned unit stride stores: 1 
-      remark #15450: unmasked unaligned unit stride loads: 1 
-      remark #15451: unmasked unaligned unit stride stores: 1 
-      remark #15475: --- begin vector cost summary ---
-      remark #15476: scalar cost: 555 
-      remark #15477: vector cost: 62.500 
-      remark #15478: estimated potential speedup: 8.850 
-      remark #15482: vectorized math library calls: 2 
-      remark #15486: divides: 2 
-      remark #15487: type converts: 2 
-      remark #15488: --- end vector cost summary ---
-   LOOP END
-
-   LOOP BEGIN at omp_homework.c(71,3) inlined into omp_homework.c(43,5)
-   <Remainder loop for vectorization>
+      LOOP BEGIN at src/omp_homework_vect_final.c(91,5) inlined into src/omp_homework_vect_final.c(56,5)
+         remark #15388: vectorization support: reference xr has aligned access   [ src/omp_homework_vect_final.c(96,18) ]
+         remark #15388: vectorization support: reference xi has aligned access   [ src/omp_homework_vect_final.c(96,35) ]
+         remark #15388: vectorization support: reference xr has aligned access   [ src/omp_homework_vect_final.c(98,24) ]
+         remark #15388: vectorization support: reference xi has aligned access   [ src/omp_homework_vect_final.c(98,36) ]
+         remark #15305: vectorization support: vector length 4
+         remark #15309: vectorization support: normalized vectorization overhead 0.326
+         remark #15355: vectorization support: at (96:7) is double type reduction   [ src/omp_homework_vect_final.c(96,7) ]
+         remark #15355: vectorization support: at (98:7) is double type reduction   [ src/omp_homework_vect_final.c(98,7) ]
+         remark #15300: LOOP WAS VECTORIZED
+         remark #15448: unmasked aligned unit stride loads: 3 
+         remark #15475: --- begin vector cost summary ---
+         remark #15476: scalar cost: 301 
+         remark #15477: vector cost: 34.500 
+         remark #15478: estimated potential speedup: 8.720 
+         remark #15482: vectorized math library calls: 1 
+         remark #15486: divides: 1 
+         remark #15487: type converts: 1 
+         remark #15488: --- end vector cost summary ---
+      LOOP END
    LOOP END
 LOOP END
 \end{verbatim}
 
 From the report we can also notice that the elements inside \verb|Xi_o| are not aligned, and could thus decrease performance. To solve this problem, we decided to call \verb|_mm_malloc| and \verb|_mm_free| instead of the regular versions of the functions. Furthermore, we decided to allow the compiler to assume that all the arrays used in the function are aligned by adding four calls to \verb|_assume_aligned|. This showed no performance improvements in the specific case of this program, since the function is inlined in \verb|main| (TODO: aggiungere ref da report), but could be used by the compiler in other scenarios to apply the same optimizations.
 
-The same holds for the \verb|[restrict]| we added on the function parameters. This has no effect in our specific scenario, but allows the compiler to assume that the pointers do not alias, and as such allows it to vectorize the inner loop, since it can assume that we're not reading and writing in the same memory position.
+The same holds for the \verb|[restrict]| we added on the function parameters. This has no effect in our specific scenario, but allows the compiler to assume that the pointers do not alias, and as such allows it to vectorize the inner loop, since it can assume that we're not reading and writing in the same memory position. This can be seen from the following optimization report lines:
+\begin{verbatim}
+LOOP BEGIN at src/omp_homework_vect_final.c(89,3)
+   remark #15542: loop was not vectorized: inner loop was already vectorized
+
+   LOOP BEGIN at src/omp_homework_vect_final.c(89,3)
+      remark #15542: loop was not vectorized: inner loop was already vectorized
+
+      LOOP BEGIN at src/omp_homework_vect_final.c(91,5)
+         remark #15388: vectorization support: reference xr[n] has aligned access   [ src/omp_homework_vect_final.c(96,18) ]
+         remark #15388: vectorization support: reference xi[n] has aligned access   [ src/omp_homework_vect_final.c(96,35) ]
+         remark #15388: vectorization support: reference xr[n] has aligned access   [ src/omp_homework_vect_final.c(98,24) ]
+         remark #15388: vectorization support: reference xi[n] has aligned access   [ src/omp_homework_vect_final.c(98,36) ]
+         remark #15305: vectorization support: vector length 4
+         remark #15309: vectorization support: normalized vectorization overhead 0.326
+         remark #15355: vectorization support: *(Xr_o+k*8) is double type reduction   [ src/omp_homework_vect_final.c(96,7) ]
+         remark #15355: vectorization support: *(Xi_o+k*8) is double type reduction   [ src/omp_homework_vect_final.c(98,7) ]
+         remark #15300: LOOP WAS VECTORIZED
+         remark #15448: unmasked aligned unit stride loads: 3 
+         remark #15475: --- begin vector cost summary ---
+         remark #15476: scalar cost: 301 
+         remark #15477: vector cost: 34.500 
+         remark #15478: estimated potential speedup: 8.720 
+         remark #15482: vectorized math library calls: 1 
+         remark #15486: divides: 1 
+         remark #15487: type converts: 1 
+         remark #15488: --- end vector cost summary ---
+      LOOP END
+   LOOP END
+LOOP END
+\end{verbatim}
+
+From the same report we can also notice that the last loop that is executed only in the case of the inverse DFT has also been vectorized:
+\begin{verbatim}
+LOOP BEGIN at src/omp_homework_vect_final.c(104,5)
+   remark #15388: vectorization support: reference Xr_o[n] has aligned access   [ src/omp_homework_vect_final.c(105,7) ]
+   remark #15388: vectorization support: reference Xr_o[n] has aligned access   [ src/omp_homework_vect_final.c(105,7) ]
+   remark #15388: vectorization support: reference Xi_o[n] has aligned access   [ src/omp_homework_vect_final.c(106,7) ]
+   remark #15388: vectorization support: reference Xi_o[n] has aligned access   [ src/omp_homework_vect_final.c(106,7) ]
+   remark #15305: vectorization support: vector length 4
+   remark #15399: vectorization support: unroll factor set to 4
+   remark #15300: LOOP WAS VECTORIZED
+   remark #15448: unmasked aligned unit stride loads: 2 
+   remark #15449: unmasked aligned unit stride stores: 2 
+   remark #15475: --- begin vector cost summary ---
+   remark #15476: scalar cost: 61 
+   remark #15477: vector cost: 17.500 
+   remark #15478: estimated potential speedup: 3.480 
+   remark #15486: divides: 2 
+   remark #15488: --- end vector cost summary ---
+LOOP END
+\end{verbatim}
 
 \subsection{Parallelization}
+In the last optimisation step, we used OpenMP to split the calculations on multiple threads. First we parallelized the program by adding a simple \verb|#pragma omp parallel for num_threads(THREAD_NO)| above the loop over the values for \verb|k|. This yielded good results, but upon further analyzing the structure and the characteristics of the CPU we decided to use dynamic scheduling by adding the following directive \verb|schedule(dynamic)| to the aforementioned line. This instructs the compiler not to assume that each thread will take the same amount of time to compute its chunk of data, and as such it will dynamically schedule the chunks of data to each CPU thread at runtime, instead of allocating static chunks of equal length at compile time. This improved the performance of our program, since the CPU we used has two different kinds of cores with different specs. TODO: show difference in performance 
 
 \section{Results}
 
