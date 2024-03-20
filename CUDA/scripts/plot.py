@@ -20,6 +20,7 @@ def plot_line(data, n: int):
     fig, ax = plt.subplots(figsize=(10, 10))
     sns.lineplot(data=data, x="thread_x", y="average_time_gpu", hue="thread_y", ax=ax, marker="o", palette="tab10")
     ax.set_title(f"Lineplot of execution times for n = {n}")
+    ax.legend(title='#Thread per block (y)')
     ax.set_xlabel('#Thread per block (x)')
     ax.set_ylabel('Average time (ms)')
     fig.savefig("report/img/lineplot.pdf")
