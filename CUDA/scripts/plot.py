@@ -13,7 +13,7 @@ def plot_heatmap(data, n: int):
     ax.set_xlabel('#Thread per block (x)')
     ax.set_ylabel('#Thread per block (y)')
     ax.set_title(f"Heatmap of execution times for n = {n}")
-    fig.savefig("report/img/heatmap.pdf")
+    fig.savefig(f"report/img/heatmap_{n}.pdf")
 
 def plot_line(data, n: int):
     data = data[data['n'] == n]
@@ -23,7 +23,7 @@ def plot_line(data, n: int):
     ax.legend(title='#Thread per block (y)')
     ax.set_xlabel('#Thread per block (x)')
     ax.set_ylabel('Average time (ms)')
-    fig.savefig("report/img/lineplot.pdf")
+    fig.savefig(f"report/img/lineplot_{n}.pdf")
 
 def plot_line_3d(data, n: int):
     data = data[data['n'] == n]
@@ -35,7 +35,7 @@ def plot_line_3d(data, n: int):
     ax.set_zlabel('Average time (ms)')
     ax.invert_yaxis()  # Reverse the order of the y-axis
     ax.set_title(f"3D plot of execution times for n = {n}")
-    fig.savefig("report/img/lineplot3d.pdf")
+    fig.savefig(f"report/img/lineplot3d_{n}.pdf")
 
 # plot a graph where n = 1000 and the x axis is pair (thread_x, thread_y) and the y axis is the average gpu time for the tuple (thread_x, thread_y)
 def plot_cpu_gpu(data, n: int):
@@ -52,18 +52,19 @@ def plot_cpu_gpu(data, n: int):
     ax.set_ylabel("Average time (ms)")
     ax.set_xlabel("Thread number")
     ax.set_title(f"Lineplot of execution times for n = {n}")
-    fig.savefig("report/img/cpu_gpu.pdf")
+    fig.savefig(f"report/img/cpu_gpu_{n}.pdf")
 
 def main():
     data = pd.read_csv('report/data.csv')
     data['average_time_gpu'] = data.groupby(['n', 'thread_x', 'thread_y'])['time_gpu'].transform('mean')
     data['average_time_cpu'] = data.groupby(['n'])['time_cpu'].transform('mean')
     data = data[['n', 'thread_x', 'thread_y', 'average_time_gpu', 'average_time_cpu']].drop_duplicates()
-    print(data)
-    plot_heatmap(data, 1000)
-    plot_line(data, 1000)
-    plot_line_3d(data, 1000)
-    plot_cpu_gpu(data, 1000)
+    data.to_csv('report/data_graph.csv', index=False)
+    for n in data['n'].unique():
+        plot_heatmap(data, n)
+        plot_line(data, n)
+        plot_line_3d(data, n)
+        plot_cpu_gpu(data, n)
 
 
 if __name__ == "__main__":

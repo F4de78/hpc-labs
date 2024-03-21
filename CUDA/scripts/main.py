@@ -3,12 +3,12 @@ import itertools as it
 import logging
 import csv
 
-N = [1000]
+N = [1000, 10_000, 30_000]
 THREADS_X = [1,2,4,8,16]
 THREADS_Y = [1,2,4,8,16]
 RUNS = 3
 
-COMP = "nvcc"
+COMP = "nvc++"
 CFLAGS = []
 
 def compile(in_file_path: str, out_file_path: str, n: int, thread_x: int, thread_y: int):
