@@ -54,8 +54,8 @@ int main(int argc, char **argv)
     }
     const auto end = chrono::steady_clock::now();
     cout << "Time elapsed: "
-         << chrono::duration_cast<chrono::seconds>(end - start).count()
-         << " seconds." << endl;
+         << chrono::duration_cast<chrono::milliseconds>(end - start).count()
+         << " ms." << endl;
 
     // Write the result to a file
     ofstream matrix_out;

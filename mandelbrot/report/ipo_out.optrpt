@@ -1,0 +1,53 @@
+Intel(R) Advisor can now assist with vectorization and show optimization
+  report messages with your source code.
+See "https://software.intel.com/en-us/intel-advisor-xe" for details.
+
+Intel(R) C Intel(R) 64 Compiler Classic for applications running on Intel(R) 64, Version 2021.10.0 Build 20230609_000000
+
+Compiler options: -fast -qopt-report=5 -qopt-report-phase=vec -fopenmp -g -march=alderlake -o bin/mandelbrot
+
+Begin optimization report for: main(int, char **)
+
+    Report from: Code generation optimizations [cg]
+
+/usr/include/c++/10/complex(1021:17)::main:  Assume directive not useful: removing
+
+/usr/include/c++/10/complex(1021:66)::main:  Assume directive not useful: removing
+
+/usr/include/c++/10/complex(1021:22)::main:  Assume directive not useful: removing
+
+
+    Report from: Vector optimizations [vec]
+
+
+LOOP BEGIN at src/mandelbrot.cpp(33,5)
+   remark #15541: outer loop was not auto-vectorized: consider using SIMD directive   [ src/mandelbrot.cpp(43,9) ]
+
+   LOOP BEGIN at src/mandelbrot.cpp(43,9)
+      remark #15520: loop was not vectorized: loop with multiple exits cannot be vectorized unless it meets search loop idiom criteria   [ src/mandelbrot.cpp(48,13) ]
+   LOOP END
+LOOP END
+
+LOOP BEGIN at src/mandelbrot.cpp(78,9)
+   remark #26015: Exception can be thrown by the call to std::basic_ostream<char, std::char_traits<char>>::operator<<(std::basic_ostream<char, std::char_traits<char>> *, int)   [ src/mandelbrot.cpp(80,24) ]
+   remark #15333: loop was not vectorized: exception handling for a call prevents vectorization   [ src/mandelbrot.cpp(80,24) ]
+LOOP END
+
+
+Non-optimizable loops:
+
+
+LOOP BEGIN at src/mandelbrot.cpp(76,5)
+   remark #15333: loop was not vectorized: exception handling for a call prevents vectorization   [ src/mandelbrot.cpp(80,24) ]
+LOOP END
+===========================================================================
+
+Begin optimization report for: std::__complex_pow_unsigned<double>(std::complex<double>, unsigned int)
+
+    Report from: Vector optimizations [vec]
+
+
+LOOP BEGIN at /usr/include/c++/10/complex(1002,11)
+   remark #15521: loop was not vectorized: loop control variable was not identified. Explicitly compute the iteration count before executing the loop or try using canonical loop form from OpenMP specification
+LOOP END
+===========================================================================
