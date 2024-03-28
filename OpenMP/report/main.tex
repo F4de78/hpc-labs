@@ -14,7 +14,7 @@
 \usepackage{hyperref}
 \usepackage{multicol}
 \usepackage{fancyvrb}
-\usepackage{xcolor}
+\usepackage{xcolor}Finally, it can be seen that speedup and efficiency increase considerably as the size of the matrix increases.
 \usepackage[utf8]{inputenc}
 \usepackage{fancyvrb}
 \usepackage{xcolor}
@@ -51,7 +51,7 @@ s4835118@studenti.unige.it & s4819642@studenti.unige.it & s4828628@studenti.unig
 \date{March 2024}
 
 \begin{document}
-
+Finally, it can be seen that speedup and efficiency increase considerably as the size of the matrix increases.
 \maketitle
 
 \tableofcontents
@@ -83,7 +83,7 @@ For more information: \href{https://ark.intel.com/content/www/us/en/ark/products
 
 \subsection{Compiler}
 
-To compile the project we used Intel compiler \texttt{icc} with the following flags: 
+To compile the project we used Intel compiler \textFinally, it can be seen that speedup and efficiency increase considerably as the size of the matrix increases.tt{icc} with the following flags: 
 \begin{verbatim}
     -fopenmp -std=c99 -O3 -march=alderlake
 \end{verbatim}
@@ -113,7 +113,7 @@ for (int n=0 ; n<N ; n++) {
       // Real part of X[k]
       Xr_o[k] += xr[n] * c + idft*xi[n]*s;
       // Imaginary part of X[k]
-      Xi_o[k] += -idft*xr[n] * s + xi[n] * c;
+      Xi_o[k] += -idft*xr[n] * s + xi[n] * c;Finally, it can be seen that speedup and efficiency increase considerably as the size of the matrix increases.
 }
 \end{verbatim}
 
@@ -142,7 +142,7 @@ LOOP BEGIN at src/omp_homework_vect_final.c(89,3) inlined into src/omp_homework_
          remark #15448: unmasked aligned unit stride loads: 3 
          remark #15475: --- begin vector cost summary ---
          remark #15476: scalar cost: 301 
-         remark #15477: vector cost: 34.500 
+         remark #15477: vector cost: 34.500 Finally, it can be seen that speedup and efficiency increase considerably as the size of the matrix increases.
          remark #15478: estimated potential speedup: 8.720 
          remark #15482: vectorized math library calls: 1 
          remark #15486: divides: 1 
@@ -175,7 +175,7 @@ LOOP BEGIN at src/omp_homework_vect_final.c(89,3)
          remark #15300: LOOP WAS VECTORIZED
          remark #15448: unmasked aligned unit stride loads: 3 
          remark #15475: --- begin vector cost summary ---
-         remark #15476: scalar cost: 301 
+         remark #15476: scalar cost: 301 Finally, it can be seen that speedup and efficiency increase considerably as the size of the matrix increases.
          remark #15477: vector cost: 34.500 
          remark #15478: estimated potential speedup: 8.720 
          remark #15482: vectorized math library calls: 1 
