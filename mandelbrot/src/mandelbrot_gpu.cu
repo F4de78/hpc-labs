@@ -50,12 +50,16 @@ __global__ void mandelbrot(int *const image) {
 
     int col = blockIdx.x * blockDim.x + threadIdx.x;
     int row = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (col >= WIDTH || row >= HEIGHT) {
+        return;
+    }
     
     int pos = row * WIDTH + col;
     
-    if (pos < 0 || pos >= HEIGHT * WIDTH) {
-        return;
-    }
+    // if (pos < 0 || pos >= HEIGHT * WIDTH) {
+    //     return;
+    // }
 
     image[pos] = 0;
     
@@ -114,16 +118,10 @@ int main(int argc, char **argv)
 
     const auto start = chrono::steady_clock::now();
 
-    memset(image, 0, size);
-
     handle_error(cudaMalloc((void **)&image_gpu, size));
-    
-    handle_error(cudaMemcpy(image_gpu, image, size, cudaMemcpyHostToDevice));    
 
     dim3 threadsPerBlock(THREADS_X, THREADS_Y);
     dim3 numBlocks((WIDTH + threadsPerBlock.x - 1) / threadsPerBlock.x, (HEIGHT + threadsPerBlock.y - 1) / threadsPerBlock.y);
-    cout << "Threads: " << threadsPerBlock.x << "x" << threadsPerBlock.y << endl;
-    cout << "Blocks: " << numBlocks.x << "x" << numBlocks.y << endl;
    
     mandelbrot<<<numBlocks, threadsPerBlock>>>(image_gpu);
 
