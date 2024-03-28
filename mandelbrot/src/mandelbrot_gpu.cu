@@ -46,10 +46,10 @@
 #endif
 using namespace std;
 
-__global__ void mandelbrot(double *const image) {
+__global__ void mandelbrot(int *const image) {
 
     int col = blockIdx.x * blockDim.x + threadIdx.x;
-    int row = blockIdx.y * blockDim.y + threadIdx.y;    
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
     
     int pos = row * WIDTH + col;
     
@@ -58,7 +58,6 @@ __global__ void mandelbrot(double *const image) {
     }
 
     image[pos] = 0;
-
     
     // const cuda::std::complex<double> c(col * STEP + MIN_X, row * STEP + MIN_Y);
     __ftype c_re = col * STEP + MIN_X;
