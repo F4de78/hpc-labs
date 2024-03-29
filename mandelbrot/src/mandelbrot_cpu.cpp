@@ -59,10 +59,11 @@ int main(int argc, char **argv)
         complex<__ftype> z(0, 0);
         for (int i = 1; i <= ITERATIONS; i++)
         {
-            z = pow(z, DEGREE) + c;
+            // z = pow(z, DEGREE) + c;
+            z = z * z + c;
 
             // If it is convergent
-            if (abs(z) >= 2)
+            if (norm(z) >= 4)
             {
                 image[pos] = i;
                 break;
