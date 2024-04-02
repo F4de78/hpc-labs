@@ -39,6 +39,14 @@
     #define ITERATIONS 1000 // Maximum number of iterations
 #endif
 
+#ifndef THREAD_NO
+    #define THREAD_NO 24
+#endif
+
+#ifndef OMP_SCHEDULE
+    #define OMP_SCHEDULE dynamic
+#endif
+
 using namespace std;
 
 int main(int argc, char **argv)
@@ -46,7 +54,7 @@ int main(int argc, char **argv)
     int *const image = new int[HEIGHT * WIDTH];
 
     const auto start = chrono::steady_clock::now();
-    #pragma omp parallel for schedule(dynamic) num_threads(24)
+    #pragma omp parallel for schedule(OPM_SCHEDULE) num_threads(THREAD_NO)
     for (int pos = 0; pos < HEIGHT * WIDTH; pos++)
     {
         image[pos] = 0;
