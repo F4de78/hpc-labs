@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 
     const int block_size = HEIGHT * WIDTH / THREAD_NO;
 
-    #pragma omp parallel for schedule(OPM_SCHEDULE) num_threads(THREAD_NO)
+    #pragma omp parallel for schedule(OMP_SCHEDULE) num_threads(THREAD_NO)
     for (int block_idx = 0; block_idx < THREAD_NO; block_idx++)
     {
 
