@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 
     const int block_size = HEIGHT * WIDTH / THREAD_NO;
 
-    #pragma omp parallel for schedule(OMP_SCHEDULE) num_threads(THREAD_NO)
+    //#pragma omp parallel for schedule(OMP_SCHEDULE) num_threads(THREAD_NO)
     for (int block_idx = 0; block_idx < THREAD_NO; block_idx++)
     {
 
@@ -70,27 +70,29 @@ int main(int argc, char **argv)
 
         //TODO: check for leftover stuff
         //TODO: what to do when we have less than 4 items?
-        //TODO: adapt for floats
+
         //TODO: have different offsets for different float types
+
+        //TODO: the < check on pos may overflow the array
         for (int pos = block_size * block_idx; pos < block_size * (block_idx + 1); pos+=4)
         {
             // image[pos] = 0;
             _mm_store_epi32((void *) &image[pos], _mm_set1_epi32(0));
 
             //TODO: try to see if loading pos, pos + 1, ... and then dividing by W, W, W, W is better (created with _mm256_set1_epi64x)
-            __m256i row_vec = _mm256_set_epi64x(pos / WIDTH, (pos + 1) / WIDTH, (pos + 2) / WIDTH, (pos + 3) / WIDTH);
-            __m256i col_vec = _mm256_set_epi64x(pos % WIDTH, (pos + 1) % WIDTH, (pos + 2) % WIDTH, (pos + 3) % WIDTH);
+            __m128i row_vec = _mm_set_epi32(pos / WIDTH, (pos + 1) / WIDTH, (pos + 2) / WIDTH, (pos + 3) / WIDTH);
+            __m128i col_vec = _mm_set_epi32(pos % WIDTH, (pos + 1) % WIDTH, (pos + 2) % WIDTH, (pos + 3) % WIDTH);
 
 
             // __ftype c_re = col * STEP + MIN_X;
             // Convert from vec of long long to vec of double
-            __m256d c_re = _mm256_cvtepi64_pd(col_vec);
+            __m256d c_re = _mm256_cvtepi32_pd(col_vec);
             c_re = _mm256_mul_pd(c_re, step);
             c_re = _mm256_add_pd(c_re, min_x);
 
 
             // __ftype c_im = row * STEP + MIN_Y;
-            __m256d c_im = _mm256_cvtepi64_pd(row_vec);
+            __m256d c_im = _mm256_cvtepi32_pd(row_vec);
             c_im = _mm256_mul_pd(c_im, step);
             c_im = _mm256_add_pd(c_im, min_y);
 
@@ -134,19 +136,30 @@ int main(int argc, char **argv)
 
                 __m128i current_step = _mm_set1_epi32(i);
 
+                //TODO: is there a AND function for vectors?
                 // should_update = abs2 >= 4 && image[pos] == 0  
-                // And by multiplying
-                __m128i should_update = _mm_mul_epi32(_mm256_cvtpd_epi32(abs2_gt_4), image_vec_all_zeros);
+                // Perform an AND by multiplying
+                // _mm_mul_epi32 only multiplies the 1st and 3rd 32bit numbers of each vector with each other and stores the 64bit results in the 128bit vector result
+                // We know we're multiplying by either 0 or 1, so we know that the multiplication will never exceed 32 bits, thus we can keep the low 32 bits of
+                // each of the multiplications
+                __m128i should_update = _mm_mullo_epi32(_mm256_cvtpd_epi32(abs2_gt_4), image_vec_all_zeros);
 
                 // tmp2 = (1 - should_update)
                 __m128i tmp2 = _mm_sub_epi32(_mm_set1_epi32(1), should_update);
                 // tmp2 = tmp2 * image[pos]
-                tmp2 = _mm_mul_epi32(tmp2, _mm_load_epi32((void*) &image[pos]));
+                // Same considerations as above
+                tmp2 = _mm_mullo_epi32(tmp2, _mm_load_epi32((void*) &image[pos]));
                 // tmp2 = tmp2 + should_update * i
                 tmp2 = _mm_add_epi32(tmp2, _mm_mul_epi32(should_update, current_step));
 
                 // image[pos] = tmp2
                 _mm_store_epi32((void*) &image[pos], tmp2);
+
+                // If all of the image pixels have diverged, then break out of the loop
+                // mask = image[pos] != 0
+                if(_mm_movemask_epi8(_mm_xor_si128(image_vec_all_zeros, _mm_set1_epi32(-1))) == 0xFFFF) {
+                    break;
+                }
 
                 // mask = image[pos] != 0
                 // int mask = _mm_movemask_
@@ -155,11 +168,11 @@ int main(int argc, char **argv)
                 // Questo probabilmente e' rotto perche' non e' detto che dopo un loop in cui e' >= 4 poi continui ad essere >=4 anche nei cicli dopo? (o cresce sempre)
                 // In ogni caso se si controlla se tutti i vari image[pos, pos+1, ...] sono != 0 vuol dire che sono tutti divergenti                // Break when all of them
                 // _CMP_GT_OQ -> Greater-than (ordered, non-signaling)
-                int mask = _mm256_movemask_pd(abs2_gt_4);
-                // If they all converge
-                if(mask == 0xFFFF) {
-                    break;
-                }
+                // int mask = _mm256_movemask_pd(abs2_gt_4);
+                // // If they all converge
+                // if(mask == 0xFFFF) {
+                //     break;
+                // }
             }
         }
     }
