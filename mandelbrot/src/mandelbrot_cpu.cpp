@@ -5,8 +5,6 @@
 #include <omp.h>
 #include <immintrin.h>
 
-
-
 #define FTYPE double
 #if FTYPE == double
 typedef double __ftype;
@@ -26,30 +24,47 @@ typedef float __ftype;
 
 // Image size
 #ifndef RESOLUTION
-#define RESOLUTION 1000
+    #define RESOLUTION 1000
 #endif
+
 #define WIDTH (RATIO_X * RESOLUTION)
 #define HEIGHT (RATIO_Y * RESOLUTION)
 
 #define STEP ((__ftype)RATIO_X / WIDTH)
 
 #ifndef DEGREE
-#define DEGREE 2 // Degree of the polynomial
+    #define DEGREE 2 // Degree of the polynomial
 #endif
 
 #ifndef ITERATIONS
-#define ITERATIONS 1000 // Maximum number of iterations
+    #define ITERATIONS 1000 // Maximum number of iterations
 #endif
 
 #ifndef THREAD_NO
-#define THREAD_NO 24
+    #define THREAD_NO 8
 #endif
 
 #ifndef OMP_SCHEDULE
-#define OMP_SCHEDULE dynamic
+    #define OMP_SCHEDULE dynamic
 #endif
 
 using namespace std;
+
+void print_m128i(__m128i mm) {
+    int* mm_int = (int*) &mm;
+    for(int i = 0; i < 4; i++) {
+        printf("%08x ", mm_int[i]);
+    }
+    printf("\n");
+}
+
+void print_m256d(__m256d mm) {
+    double* mm_double = (double*) &mm;
+    for(int i = 0; i < 4; i++) {
+        printf("%lf ", mm_double[i]);
+    }
+    printf("\n");
+}
 
 int main(int argc, char **argv)
 {
@@ -59,11 +74,9 @@ int main(int argc, char **argv)
 
     const int block_size = HEIGHT * WIDTH / THREAD_NO;
 
-    //#pragma omp parallel for schedule(OMP_SCHEDULE) num_threads(THREAD_NO)
+    #pragma omp parallel for schedule(OMP_SCHEDULE) num_threads(THREAD_NO)
     for (int block_idx = 0; block_idx < THREAD_NO; block_idx++)
     {
-
-
         __m256d step = _mm256_set1_pd(STEP);
         __m256d min_x = _mm256_set1_pd(MIN_X);
         __m256d min_y = _mm256_set1_pd(MIN_Y);
@@ -77,12 +90,12 @@ int main(int argc, char **argv)
         for (int pos = block_size * block_idx; pos < block_size * (block_idx + 1); pos+=4)
         {
             // image[pos] = 0;
-            _mm_store_epi32((void *) &image[pos], _mm_set1_epi32(0));
+            _mm_store_si128((__m128i *) &image[pos], _mm_set1_epi32(0));
 
             //TODO: try to see if loading pos, pos + 1, ... and then dividing by W, W, W, W is better (created with _mm256_set1_epi64x)
             __m128i row_vec = _mm_set_epi32(pos / WIDTH, (pos + 1) / WIDTH, (pos + 2) / WIDTH, (pos + 3) / WIDTH);
             __m128i col_vec = _mm_set_epi32(pos % WIDTH, (pos + 1) % WIDTH, (pos + 2) % WIDTH, (pos + 3) % WIDTH);
-
+            // _mm_load_si128
 
             // __ftype c_re = col * STEP + MIN_X;
             // Convert from vec of long long to vec of double
@@ -96,22 +109,31 @@ int main(int argc, char **argv)
             c_im = _mm256_mul_pd(c_im, step);
             c_im = _mm256_add_pd(c_im, min_y);
 
+            // printf("c_re ");
+            // print_m256d(c_re);
+
+            // printf("c_im ");
+            // print_m256d(c_im);
+            
+
             // set vectors to 0
             __m256d z_re = _mm256_setzero_pd();
             __m256d z_im = _mm256_setzero_pd();
+            
 
             // z = z^2 + c
             for (int i = 1; i <= ITERATIONS; i++)
             {
-                //TODO: fused add and multiplication operations? (if exists)
+                //TODO: fused add and multiplication operations? (if exists) (FMA (-> better precision and perf))
 
                 // xy	=	(a+ib)(c+id)	
                 // 	    =	(ac-bd)+i(ad+bc).
                 // a == c, b == d
                 // ==> x * x = (a * a - b * b) + i (2 * a * b)
+
                 __m256d z2_re = _mm256_mul_pd(z_re, z_re);
                 __m256d tmp = _mm256_mul_pd(z_im, z_im);
-                z2_re = _mm256_add_pd(z2_re, tmp);
+                z2_re = _mm256_sub_pd(z2_re, tmp);
 
                 __m256d z2_im = _mm256_mul_pd(z_re, z_im);
                 z2_im = _mm256_add_pd(z2_im, z2_im);
@@ -123,16 +145,18 @@ int main(int argc, char **argv)
 
                 // |z|2 = x2 + y2.
                 tmp = _mm256_mul_pd(z_im, z_im);
-                __m256d abs2= _mm256_add_pd(z2_re, tmp);
+                __m256d abs2= _mm256_add_pd(_mm256_mul_pd(z_re, z_re), tmp);
 
                 // Settare image[pos] se vale abs2 >= 4
 
                 // image[pos] = should_update * i + (1 - should_update) * image[pos]
-
+                __m128i image_vec = _mm_load_si128((__m128i *) &image[pos]);
                 __m256d abs2_gt_4 = _mm256_cmp_pd(abs2, _mm256_set1_pd(4.0), _CMP_GT_OQ);
 
-                __m128i image_vec = _mm_load_epi32((void *) &image[pos]);
-                __m128i image_vec_all_zeros = _mm_cmpeq_epi8(image_vec, _mm_setzero_si128());
+               
+                __m128i image_vec_all_zeros = _mm_cmpeq_epi32(image_vec, _mm_setzero_si128());
+                // printf("image_vec_all_zeros ");
+                // print_m128i(image_vec_all_zeros);
 
                 __m128i current_step = _mm_set1_epi32(i);
 
@@ -142,24 +166,75 @@ int main(int argc, char **argv)
                 // _mm_mul_epi32 only multiplies the 1st and 3rd 32bit numbers of each vector with each other and stores the 64bit results in the 128bit vector result
                 // We know we're multiplying by either 0 or 1, so we know that the multiplication will never exceed 32 bits, thus we can keep the low 32 bits of
                 // each of the multiplications
-                __m128i should_update = _mm_mullo_epi32(_mm256_cvtpd_epi32(abs2_gt_4), image_vec_all_zeros);
 
-                // tmp2 = (1 - should_update)
+                int should_updat = _mm256_movemask_pd(abs2_gt_4) & _mm_movemask_ps(image_vec_all_zeros);
+                // printf("POS: %d\n", pos);
+                // printf("_mm256_movemask_pd %08x\n", _mm256_movemask_pd(abs2_gt_4));
+                // printf("_mm_movemask_ps %08x\n", _mm_movemask_ps(image_vec_all_zeros));
+                // printf("should_updat %08x\n", should_updat);
+                // printf("%08x\n", should_updat);
+
+                // __m128i should_update = _mm_mullo_epi32(_mm256_cvtpd_epi32(abs2_gt_4), image_vec_all_zeros);
+                // print_m128i(_mm256_cvtpd_epi32(abs2_gt_4));
+
+                __m128i should_update = _mm_set_epi32(
+                    (should_updat >> 3) & 1, 
+                    (should_updat >> 2) & 1, 
+                    (should_updat >> 1) & 1, 
+                    (should_updat >> 0) & 1
+                );
+
+                // printf("should_update ");
+                // print_m128i(should_update);
+
+                //tmp2 = (1 - should_update)
                 __m128i tmp2 = _mm_sub_epi32(_mm_set1_epi32(1), should_update);
+                // printf("1-should_update ");
+                // print_m128i(tmp2);
                 // tmp2 = tmp2 * image[pos]
                 // Same considerations as above
-                tmp2 = _mm_mullo_epi32(tmp2, _mm_load_epi32((void*) &image[pos]));
+                tmp2 = _mm_mullo_epi32(tmp2, _mm_load_si128((__m128i*) &image[pos]));
+                // printf("_mm_mullo_epi32 ");
+                // print_m128i(tmp2);
                 // tmp2 = tmp2 + should_update * i
-                tmp2 = _mm_add_epi32(tmp2, _mm_mul_epi32(should_update, current_step));
+                // printf("current_step ");
+                // print_m128i(current_step);
+                // printf("_mm_mullo_epi32 ");
+                // print_m128i(_mm_mullo_epi32(should_update, current_step));
+                tmp2 = _mm_add_epi32(tmp2, _mm_mullo_epi32(should_update, current_step));
+                // printf("_mm_add_epi32 ");
+                // print_m128i(tmp2);
 
                 // image[pos] = tmp2
-                _mm_store_epi32((void*) &image[pos], tmp2);
+                //_mm_store_si128((__m128i*) &image[pos], tmp2);
+                _mm_store_si128((__m128i*) &image[pos], tmp2);
 
                 // If all of the image pixels have diverged, then break out of the loop
                 // mask = image[pos] != 0
-                if(_mm_movemask_epi8(_mm_xor_si128(image_vec_all_zeros, _mm_set1_epi32(-1))) == 0xFFFF) {
+                // printf("%08x\n", _mm_movemask_epi8(_mm_xor_si128(image_vec_all_zeros, _mm_set1_epi32(-1))));
+
+// 1010n101  f
+                // if(_mm_movemask_epi8(_mm_xor_si128(image_vec_all_zeros, _mm_set1_epi32(-1))) == 0xFFFF) {
+                //     break;
+                // }
+
+                // print_m128i(image_vec_all_zeros);
+                int all_diverge = _mm256_movemask_pd(abs2_gt_4);
+                // int image_all_greater_than_zero = _mm_movemask_epi8(abs2_gt_4) ^ -1;
+                // printf("%08x\n", _mm_movemask_epi8(image_vec_all_zeros));
+                //printf("%08x\n", image_all_greater_than_zero);
+                // printf("%08x\n", all_diverge);
+                if(all_diverge  == 0xF) {
                     break;
                 }
+
+
+                // 0000 1111
+                // 1000 1000 ^
+                // ===========
+                // 1000 0111   
+                // 
+                // 
 
                 // mask = image[pos] != 0
                 // int mask = _mm_movemask_
@@ -174,6 +249,7 @@ int main(int argc, char **argv)
                 //     break;
                 // }
             }
+           
         }
     }
 
