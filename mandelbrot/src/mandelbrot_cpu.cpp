@@ -120,6 +120,8 @@ int main(int argc, char **argv)
             __m256d z_re = _mm256_setzero_pd();
             __m256d z_im = _mm256_setzero_pd();
 
+            __m128i results =  _mm_setzero_si128();
+
             // z = z^2 + c
             for (int i = 1; i <= ITERATIONS; i++)
             {
@@ -144,11 +146,10 @@ int main(int argc, char **argv)
                 __m256d abs2= _mm256_add_pd(_mm256_mul_pd(z_re, z_re), tmp);
 
                 // image[pos] = should_update * i + (1 - should_update) * image[pos]
-                __m128i image_vec = _mm_load_si128((__m128i *) &image[pos]);
                 __m256d abs2_gt_4 = _mm256_cmp_pd(abs2, _mm256_set1_pd(4.0), _CMP_GT_OQ);
 
                
-                __m128i image_vec_all_zeros = _mm_cmpeq_epi32(image_vec, _mm_setzero_si128());
+                __m128i image_vec_all_zeros = _mm_cmpeq_epi32(results, _mm_setzero_si128());
 
                 __m128i current_step = _mm_set1_epi32(i);
 
@@ -172,19 +173,19 @@ int main(int argc, char **argv)
 
                 // tmp2 = tmp2 * image[pos]
                 // Same considerations as above
-                tmp2 = _mm_mullo_epi32(tmp2, _mm_load_si128((__m128i*) &image[pos]));
+                tmp2 = _mm_mullo_epi32(tmp2, results);
 
                 // tmp2 = tmp2 + should_update * i
-                tmp2 = _mm_add_epi32(tmp2, _mm_mullo_epi32(should_update, current_step));
-
                 // image[pos] = tmp2
-                _mm_store_si128((__m128i*) &image[pos], tmp2);
+                results = _mm_add_epi32(tmp2, _mm_mullo_epi32(should_update, current_step));
 
                 // If all of the image pixels have diverged, then break out of the loop
                 if(all_diverge_mask  == 0xF) {
                     break;
                 }
             }
+
+            _mm_store_si128((__m128i*) &image[pos], results);
         }
     }
 
