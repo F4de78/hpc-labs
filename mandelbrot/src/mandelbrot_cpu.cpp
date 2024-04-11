@@ -93,10 +93,17 @@ int main(int argc, char **argv)
             _mm_store_si128((__m128i *) &image[pos], _mm_set1_epi32(0));
 
             //TODO: try to see if loading pos, pos + 1, ... and then dividing by W, W, W, W is better (created with _mm256_set1_epi64x)
-            __m128i row_vec = _mm_set_epi32(pos / WIDTH, (pos + 1) / WIDTH, (pos + 2) / WIDTH, (pos + 3) / WIDTH);
-            __m128i col_vec = _mm_set_epi32(pos % WIDTH, (pos + 1) % WIDTH, (pos + 2) % WIDTH, (pos + 3) % WIDTH);
-            // _mm_load_si128
-
+            __m128i row_vec = _mm_set_epi32( 
+                (pos + 3) / WIDTH, 
+                (pos + 2) / WIDTH, 
+                (pos + 1) / WIDTH, 
+                (pos + 0) / WIDTH);
+            
+            __m128i col_vec = _mm_set_epi32(
+                (pos + 3) % WIDTH, 
+                (pos + 2) % WIDTH, 
+                (pos + 1) % WIDTH, 
+                (pos + 0) % WIDTH);
             // __ftype c_re = col * STEP + MIN_X;
             // Convert from vec of long long to vec of double
             __m256d c_re = _mm256_cvtepi32_pd(col_vec);
@@ -167,7 +174,7 @@ int main(int argc, char **argv)
                 // We know we're multiplying by either 0 or 1, so we know that the multiplication will never exceed 32 bits, thus we can keep the low 32 bits of
                 // each of the multiplications
 
-                int should_updat = _mm256_movemask_pd(abs2_gt_4) & _mm_movemask_ps(image_vec_all_zeros);
+                int should_updat = _mm256_movemask_pd(abs2_gt_4) & _mm_movemask_ps((__m128) image_vec_all_zeros);
                 // printf("POS: %d\n", pos);
                 // printf("_mm256_movemask_pd %08x\n", _mm256_movemask_pd(abs2_gt_4));
                 // printf("_mm_movemask_ps %08x\n", _mm_movemask_ps(image_vec_all_zeros));
@@ -227,29 +234,7 @@ int main(int argc, char **argv)
                 if(all_diverge  == 0xF) {
                     break;
                 }
-
-
-                // 0000 1111
-                // 1000 1000 ^
-                // ===========
-                // 1000 0111   
-                // 
-                // 
-
-                // mask = image[pos] != 0
-                // int mask = _mm_movemask_
-                // if mask break;
-
-                // Questo probabilmente e' rotto perche' non e' detto che dopo un loop in cui e' >= 4 poi continui ad essere >=4 anche nei cicli dopo? (o cresce sempre)
-                // In ogni caso se si controlla se tutti i vari image[pos, pos+1, ...] sono != 0 vuol dire che sono tutti divergenti                // Break when all of them
-                // _CMP_GT_OQ -> Greater-than (ordered, non-signaling)
-                // int mask = _mm256_movemask_pd(abs2_gt_4);
-                // // If they all converge
-                // if(mask == 0xFFFF) {
-                //     break;
-                // }
             }
-           
         }
     }
 
