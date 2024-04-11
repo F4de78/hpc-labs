@@ -89,30 +89,21 @@ int main(int argc, char **argv)
         //TODO: the < check on pos may overflow the array
         for (int pos = block_size * block_idx; pos < block_size * (block_idx + 1); pos+=4)
         {
-            // image[pos] = 0;
-            _mm_store_si128((__m128i *) &image[pos], _mm_set1_epi32(0));
+            __m256d c_re = _mm256_set_pd(
+                (pos + 3) % WIDTH, 
+                (pos + 2) % WIDTH, 
+                (pos + 1) % WIDTH, 
+                (pos + 0) % WIDTH);
 
-            //TODO: try to see if loading pos, pos + 1, ... and then dividing by W, W, W, W is better (created with _mm256_set1_epi64x)
-            __m128i row_vec = _mm_set_epi32( 
+            c_re = _mm256_mul_pd(c_re, step);
+            c_re = _mm256_add_pd(c_re, min_x);
+
+            __m256d c_im = _mm256_set_pd( 
                 (pos + 3) / WIDTH, 
                 (pos + 2) / WIDTH, 
                 (pos + 1) / WIDTH, 
                 (pos + 0) / WIDTH);
             
-            __m128i col_vec = _mm_set_epi32(
-                (pos + 3) % WIDTH, 
-                (pos + 2) % WIDTH, 
-                (pos + 1) % WIDTH, 
-                (pos + 0) % WIDTH);
-            
-            // Convert from vec of long long to vec of double
-            __m256d c_re = _mm256_cvtepi32_pd(col_vec);
-            c_re = _mm256_mul_pd(c_re, step);
-            c_re = _mm256_add_pd(c_re, min_x);
-
-
-            // __ftype c_im = row * STEP + MIN_Y;
-            __m256d c_im = _mm256_cvtepi32_pd(row_vec);
             c_im = _mm256_mul_pd(c_im, step);
             c_im = _mm256_add_pd(c_im, min_y);
 
