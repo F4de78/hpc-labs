@@ -104,7 +104,7 @@ int main(int argc, char **argv)
                 (pos + 2) % WIDTH, 
                 (pos + 1) % WIDTH, 
                 (pos + 0) % WIDTH);
-            // __ftype c_re = col * STEP + MIN_X;
+            
             // Convert from vec of long long to vec of double
             __m256d c_re = _mm256_cvtepi32_pd(col_vec);
             c_re = _mm256_mul_pd(c_re, step);
@@ -116,28 +116,17 @@ int main(int argc, char **argv)
             c_im = _mm256_mul_pd(c_im, step);
             c_im = _mm256_add_pd(c_im, min_y);
 
-            // printf("c_re ");
-            // print_m256d(c_re);
-
-            // printf("c_im ");
-            // print_m256d(c_im);
-            
-
             // set vectors to 0
             __m256d z_re = _mm256_setzero_pd();
             __m256d z_im = _mm256_setzero_pd();
-            
 
             // z = z^2 + c
             for (int i = 1; i <= ITERATIONS; i++)
             {
-                //TODO: fused add and multiplication operations? (if exists) (FMA (-> better precision and perf))
-
                 // xy	=	(a+ib)(c+id)	
                 // 	    =	(ac-bd)+i(ad+bc).
                 // a == c, b == d
                 // ==> x * x = (a * a - b * b) + i (2 * a * b)
-
                 __m256d z2_re = _mm256_mul_pd(z_re, z_re);
                 __m256d tmp = _mm256_mul_pd(z_im, z_im);
                 z2_re = _mm256_sub_pd(z2_re, tmp);
@@ -154,84 +143,45 @@ int main(int argc, char **argv)
                 tmp = _mm256_mul_pd(z_im, z_im);
                 __m256d abs2= _mm256_add_pd(_mm256_mul_pd(z_re, z_re), tmp);
 
-                // Settare image[pos] se vale abs2 >= 4
-
                 // image[pos] = should_update * i + (1 - should_update) * image[pos]
                 __m128i image_vec = _mm_load_si128((__m128i *) &image[pos]);
                 __m256d abs2_gt_4 = _mm256_cmp_pd(abs2, _mm256_set1_pd(4.0), _CMP_GT_OQ);
 
                
                 __m128i image_vec_all_zeros = _mm_cmpeq_epi32(image_vec, _mm_setzero_si128());
-                // printf("image_vec_all_zeros ");
-                // print_m128i(image_vec_all_zeros);
 
                 __m128i current_step = _mm_set1_epi32(i);
 
-                //TODO: is there a AND function for vectors?
                 // should_update = abs2 >= 4 && image[pos] == 0  
                 // Perform an AND by multiplying
                 // _mm_mul_epi32 only multiplies the 1st and 3rd 32bit numbers of each vector with each other and stores the 64bit results in the 128bit vector result
                 // We know we're multiplying by either 0 or 1, so we know that the multiplication will never exceed 32 bits, thus we can keep the low 32 bits of
                 // each of the multiplications
-
-                int should_updat = _mm256_movemask_pd(abs2_gt_4) & _mm_movemask_ps((__m128) image_vec_all_zeros);
-                // printf("POS: %d\n", pos);
-                // printf("_mm256_movemask_pd %08x\n", _mm256_movemask_pd(abs2_gt_4));
-                // printf("_mm_movemask_ps %08x\n", _mm_movemask_ps(image_vec_all_zeros));
-                // printf("should_updat %08x\n", should_updat);
-                // printf("%08x\n", should_updat);
-
-                // __m128i should_update = _mm_mullo_epi32(_mm256_cvtpd_epi32(abs2_gt_4), image_vec_all_zeros);
-                // print_m128i(_mm256_cvtpd_epi32(abs2_gt_4));
+                int all_diverge_mask = _mm256_movemask_pd(abs2_gt_4);
+                int should_update_mask = all_diverge_mask & _mm_movemask_ps((__m128) image_vec_all_zeros);
 
                 __m128i should_update = _mm_set_epi32(
-                    (should_updat >> 3) & 1, 
-                    (should_updat >> 2) & 1, 
-                    (should_updat >> 1) & 1, 
-                    (should_updat >> 0) & 1
+                    (should_update_mask >> 3) & 1, 
+                    (should_update_mask >> 2) & 1, 
+                    (should_update_mask >> 1) & 1, 
+                    (should_update_mask >> 0) & 1
                 );
-
-                // printf("should_update ");
-                // print_m128i(should_update);
 
                 //tmp2 = (1 - should_update)
                 __m128i tmp2 = _mm_sub_epi32(_mm_set1_epi32(1), should_update);
-                // printf("1-should_update ");
-                // print_m128i(tmp2);
+
                 // tmp2 = tmp2 * image[pos]
                 // Same considerations as above
                 tmp2 = _mm_mullo_epi32(tmp2, _mm_load_si128((__m128i*) &image[pos]));
-                // printf("_mm_mullo_epi32 ");
-                // print_m128i(tmp2);
+
                 // tmp2 = tmp2 + should_update * i
-                // printf("current_step ");
-                // print_m128i(current_step);
-                // printf("_mm_mullo_epi32 ");
-                // print_m128i(_mm_mullo_epi32(should_update, current_step));
                 tmp2 = _mm_add_epi32(tmp2, _mm_mullo_epi32(should_update, current_step));
-                // printf("_mm_add_epi32 ");
-                // print_m128i(tmp2);
 
                 // image[pos] = tmp2
-                //_mm_store_si128((__m128i*) &image[pos], tmp2);
                 _mm_store_si128((__m128i*) &image[pos], tmp2);
 
                 // If all of the image pixels have diverged, then break out of the loop
-                // mask = image[pos] != 0
-                // printf("%08x\n", _mm_movemask_epi8(_mm_xor_si128(image_vec_all_zeros, _mm_set1_epi32(-1))));
-
-// 1010n101  f
-                // if(_mm_movemask_epi8(_mm_xor_si128(image_vec_all_zeros, _mm_set1_epi32(-1))) == 0xFFFF) {
-                //     break;
-                // }
-
-                // print_m128i(image_vec_all_zeros);
-                int all_diverge = _mm256_movemask_pd(abs2_gt_4);
-                // int image_all_greater_than_zero = _mm_movemask_epi8(abs2_gt_4) ^ -1;
-                // printf("%08x\n", _mm_movemask_epi8(image_vec_all_zeros));
-                //printf("%08x\n", image_all_greater_than_zero);
-                // printf("%08x\n", all_diverge);
-                if(all_diverge  == 0xF) {
+                if(all_diverge_mask  == 0xF) {
                     break;
                 }
             }
