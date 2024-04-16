@@ -5,11 +5,14 @@
 #include <omp.h>
 #include <immintrin.h>
 
-#define FTYPE double
+#ifndef FTYPE
+    #define FTYPE double
+#endif
+
 #if FTYPE == double
-typedef double __ftype;
+    typedef double __ftype;
 #else
-typedef float __ftype;
+    typedef float __ftype;
 #endif
 
 // Ranges of the set
@@ -41,7 +44,7 @@ typedef float __ftype;
 #endif
 
 #ifndef THREAD_NO
-    #define THREAD_NO 8
+    #define THREAD_NO 24
 #endif
 
 #ifndef OMP_SCHEDULE
@@ -77,6 +80,7 @@ int main(int argc, char **argv)
     #pragma omp parallel for schedule(OMP_SCHEDULE) num_threads(THREAD_NO)
     for (int block_idx = 0; block_idx < THREAD_NO; block_idx++)
     {
+        #if FTYPE == double
         __m256d step = _mm256_set1_pd(STEP);
         __m256d min_x = _mm256_set1_pd(MIN_X);
         __m256d min_y = _mm256_set1_pd(MIN_Y);
@@ -178,6 +182,118 @@ int main(int argc, char **argv)
 
             _mm_store_si128((__m128i*) &image[pos], results);
         }
+
+        #else
+
+        __m256 step = _mm256_set1_ps(STEP);
+        __m256 min_x = _mm256_set1_ps(MIN_X);
+        __m256 min_y = _mm256_set1_ps(MIN_Y);
+
+        for (int pos = block_size * block_idx; pos < block_size * (block_idx + 1); pos+=8)
+        {
+            __m256 c_re = _mm256_set_ps(
+                (pos + 7) % WIDTH, 
+                (pos + 6) % WIDTH, 
+                (pos + 5) % WIDTH, 
+                (pos + 4) % WIDTH,
+                (pos + 3) % WIDTH, 
+                (pos + 2) % WIDTH, 
+                (pos + 1) % WIDTH, 
+                (pos + 0) % WIDTH);
+
+            c_re = _mm256_mul_ps(c_re, step);
+            c_re = _mm256_add_ps(c_re, min_x);
+
+            __m256 c_im = _mm256_set_ps( 
+                (pos + 7) / WIDTH, 
+                (pos + 6) / WIDTH, 
+                (pos + 5) / WIDTH, 
+                (pos + 4) / WIDTH,
+                (pos + 3) / WIDTH, 
+                (pos + 2) / WIDTH, 
+                (pos + 1) / WIDTH, 
+                (pos + 0) / WIDTH);
+            
+            c_im = _mm256_mul_ps(c_im, step);
+            c_im = _mm256_add_ps(c_im, min_y);
+
+            // set vectors to 0
+            __m256 z_re = _mm256_setzero_ps();
+            __m256 z_im = _mm256_setzero_ps();
+
+            __m256i results =  _mm256_setzero_si256();
+
+            // z = z^2 + c
+            for (int i = 1; i <= ITERATIONS; i++)
+            {
+                // xy	=	(a+ib)(c+id)	
+                // 	    =	(ac-bd)+i(ad+bc).
+                // a == c, b == d
+                // ==> x * x = (a * a - b * b) + i (2 * a * b)
+                __m256 z2_re = _mm256_mul_ps(z_re, z_re);
+                __m256 tmp = _mm256_mul_ps(z_im, z_im);
+                z2_re = _mm256_sub_ps(z2_re, tmp);
+
+                __m256 z2_im = _mm256_mul_ps(z_re, z_im);
+                z2_im = _mm256_add_ps(z2_im, z2_im);
+
+                // z = z^2 + c;
+                // => z2 + c
+                z_re = _mm256_add_ps(z2_re, c_re);
+                z_im = _mm256_add_ps(z2_im, c_im);
+
+                // |z|2 = x2 + y2.
+                tmp = _mm256_mul_ps(z_im, z_im);
+                __m256 abs2= _mm256_add_ps(_mm256_mul_ps(z_re, z_re), tmp);
+
+                // image[pos] = should_update * i + (1 - should_update) * image[pos]
+                __m256 abs2_gt_4 = _mm256_cmp_ps(abs2, _mm256_set1_ps(4.0), _CMP_GT_OQ);
+
+               
+                __m256i image_vec_all_zeros = _mm256_cmpeq_epi32(results, _mm256_setzero_si256());
+
+                __m256i current_step = _mm256_set1_epi32(i);
+
+                // should_update = abs2 >= 4 && image[pos] == 0  
+                // Perform an AND by multiplying
+                // _mm_mul_epi32 only multiplies the 1st and 3rd 32bit numbers of each vector with each other and stores the 64bit results in the 128bit vector result
+                // We know we're multiplying by either 0 or 1, so we know that the multiplication will never exceed 32 bits, thus we can keep the low 32 bits of
+                // each of the multiplications
+                int all_diverge_mask = _mm256_movemask_pd(abs2_gt_4);
+                int should_update_mask = all_diverge_mask & _mm256_movemask_ps(image_vec_all_zeros);
+
+                __m256i should_update = _mm256_set_epi32(
+                    (should_update_mask >> 7) & 1, 
+                    (should_update_mask >> 6) & 1, 
+                    (should_update_mask >> 5) & 1, 
+                    (should_update_mask >> 4) & 1,
+                    (should_update_mask >> 3) & 1, 
+                    (should_update_mask >> 2) & 1, 
+                    (should_update_mask >> 1) & 1, 
+                    (should_update_mask >> 0) & 1
+                );
+
+                //tmp2 = (1 - should_update)
+                __m256i tmp2 = _mm256_sub_epi32(_mm256_set1_epi32(1), should_update);
+
+                // tmp2 = tmp2 * image[pos]
+                // Same considerations as above
+                tmp2 = _mm256_mullo_epi32(tmp2, results);
+
+                // tmp2 = tmp2 + should_update * i
+                // image[pos] = tmp2
+                results = _mm256_add_epi32(tmp2, _mm256_mullo_epi32(should_update, current_step));
+
+                // If all of the image pixels have diverged, then break out of the loop
+                if(all_diverge_mask  == 0xFF) {
+                    break;
+                }
+            }
+
+            _mm256_store_si256((__m256i*) &image[pos], results);
+        }
+
+        #endif
     }
 
     const auto end = chrono::steady_clock::now();
