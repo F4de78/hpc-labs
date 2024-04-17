@@ -71,7 +71,7 @@ void print_m256d(__m256d mm) {
 
 int main(int argc, char **argv)
 {
-    int *const image = new int[HEIGHT * WIDTH];
+    long long int *const image = new long long int [HEIGHT * WIDTH];
 
     const auto start = chrono::steady_clock::now();
 
@@ -115,7 +115,11 @@ int main(int argc, char **argv)
             __m256d z_re = _mm256_setzero_pd();
             __m256d z_im = _mm256_setzero_pd();
 
-            __m128i results =  _mm_setzero_si128();
+            __m256i results = _mm256_set1_epi64x(0);
+
+            // Initialize mask to all ones
+            //__m256d mask = _mm256_set1_pd(std::numeric_limits<double>::quiet_NaN());
+            __m256i mask = _mm256_set1_epi64x(-1);
 
             // z = z^2 + c
             for (int i = 1; i <= ITERATIONS; i++)
@@ -139,14 +143,23 @@ int main(int argc, char **argv)
                 // |z|2 = x2 + y2.
                 tmp = _mm256_mul_pd(z_im, z_im);
                 __m256d abs2= _mm256_add_pd(_mm256_mul_pd(z_re, z_re), tmp);
+                //printf("abs2           ");
+                //print_m256d(abs2);
 
                 // image[pos] = should_update * i + (1 - should_update) * image[pos]
                 __m256d abs2_gt_4 = _mm256_cmp_pd(abs2, _mm256_set1_pd(4.0), _CMP_GT_OQ);
 
-               
-                __m128i image_vec_all_zeros = _mm_cmpeq_epi32(results, _mm_setzero_si128());
+                //__m128i image_vec_all_zeros = _mm_cmpeq_epi32(results, _mm_setzero_si128());
 
-                __m128i current_step = _mm_set1_epi32(i);
+                __m256i current_step = _mm256_set1_epi64x(i);
+
+
+                // image[pos] = abs2_gt_4[pos] && mask[pos] && current_step[pos]
+                // mask[pos] = mask[pos] && (mask[pos] ^ abs2_gt_4[pos])
+                results = _mm256_or_si256(results, _mm256_and_si256(_mm256_and_si256((__m256d)abs2_gt_4, mask), current_step));
+                mask = _mm256_and_si256(mask, _mm256_xor_si256(mask, abs2_gt_4));
+                //printf("abs2_gt_4_int  ");
+                //print_m128i(abs2_gt_4_int);
 
                 // should_update = abs2 >= 4 && image[pos] == 0  
                 // Perform an AND by multiplying
@@ -154,33 +167,35 @@ int main(int argc, char **argv)
                 // We know we're multiplying by either 0 or 1, so we know that the multiplication will never exceed 32 bits, thus we can keep the low 32 bits of
                 // each of the multiplications
                 int all_diverge_mask = _mm256_movemask_pd(abs2_gt_4);
-                int should_update_mask = all_diverge_mask & _mm_movemask_ps((__m128) image_vec_all_zeros);
+                // int should_update_mask = all_diverge_mask & _mm_movemask_ps((__m128) image_vec_all_zeros);
 
-                __m128i should_update = _mm_set_epi32(
-                    (should_update_mask >> 3) & 1, 
-                    (should_update_mask >> 2) & 1, 
-                    (should_update_mask >> 1) & 1, 
-                    (should_update_mask >> 0) & 1
-                );
+                // __m128i should_update = _mm_set_epi32(
+                //     (should_update_mask >> 3) & 1, 
+                //     (should_update_mask >> 2) & 1, 
+                //     (should_update_mask >> 1) & 1, 
+                //     (should_update_mask >> 0) & 1
+                // );
 
                 //tmp2 = (1 - should_update)
-                __m128i tmp2 = _mm_sub_epi32(_mm_set1_epi32(1), should_update);
+                // __m128i tmp2 = _mm_sub_epi32(_mm_set1_epi32(1), should_update);
 
-                // tmp2 = tmp2 * image[pos]
-                // Same considerations as above
-                tmp2 = _mm_mullo_epi32(tmp2, results);
+                // // tmp2 = tmp2 * image[pos]
+                // // Same considerations as above
+                // tmp2 = _mm_mullo_epi32(tmp2, results);
 
-                // tmp2 = tmp2 + should_update * i
-                // image[pos] = tmp2
-                results = _mm_add_epi32(tmp2, _mm_mullo_epi32(should_update, current_step));
+                // // tmp2 = tmp2 + should_update * i
+                // // image[pos] = tmp2
+                // results = _mm_add_epi32(tmp2, _mm_mullo_epi32(should_update, current_step));
 
                 // If all of the image pixels have diverged, then break out of the loop
                 if(all_diverge_mask  == 0xF) {
                     break;
+                }else if (all_diverge_mask  != 0) {
+                    int x = 1;
                 }
             }
 
-            _mm_store_si128((__m128i*) &image[pos], results);
+            _mm256_store_si256((__m256i*) &image[pos], results);
         }
 
         #else
