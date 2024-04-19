@@ -9,18 +9,22 @@ RUNS = 3
 
 COMP = "icpx"
 CFLAGS = ["-fast", "-qopenmp"]
+SRC = "src/mandelbrot_cpu_vect_omp.cpp"
 
-def compile(in_file_path: str, out_file_path: str, resolution: int, thread: int):
+def compile(in_file_path: str, out_file_path: str, resolution: int, thread: int, fma: bool, ftype: str):
 
     subprocess.run(
         [
             COMP,
             *CFLAGS,
             in_file_path,
+            "-xHost",
             "-o",
             "bin/" + out_file_path,
             f"-DRESOLUTION={resolution}",
-            f"-DTHREAD_NO={thread}"
+            f"-DTHREAD_NO={thread}",
+            "-DFMA" if fma else "",
+            f"-DFTYPE={ftype}"
         ]
     )
 
@@ -31,21 +35,21 @@ def compile(in_file_path: str, out_file_path: str, resolution: int, thread: int)
 
 def main():
     with open('report/data_cpu.csv', 'w',  newline='') as csvfile:
-        fieldnames = ['run', 'n', 'thread_no', 'time', 'speedup', 'efficiency']
+        fieldnames = ['run', 'n', 'thread_no', 'fma', 'ftype', 'time', 'speedup', 'efficiency']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        time = dict()
-        for n, thread_no in it.product(RESOLUTION, THREADS):
+        time = []
+        for n, thread_no, fma, ftype in it.product(RESOLUTION, THREADS, [True, False], ["float", "double"]):
             print(time)
             for run in range(1, RUNS + 1):
-                curr_time = compile("src/mandelbrot_cpu.cpp", f"mbcpu_{n}_{thread_no}", n, thread_no)
+                curr_time = compile(SRC, f"mbcpu", n, thread_no, fma, ftype)
                 if thread_no == 1:
-                    time[run] = curr_time
+                    time[run - 1] = curr_time
                     speedup = 1
                 else:
-                    speedup = (sum(time.values())/RUNS) / curr_time
+                    speedup = (sum(time)/RUNS) / curr_time
                 efficiency = speedup / thread_no
-                writer.writerow({'run': run, 'n':n, 'thread_no':thread_no, 'time':curr_time, 'speedup':speedup, 'efficiency': efficiency})
+                writer.writerow({'run': run, 'n':n, 'thread_no':thread_no, 'fma':fma,'ftype':ftype,'time':curr_time, 'speedup':speedup, 'efficiency': efficiency})
 
                
 if __name__ == "__main__":
