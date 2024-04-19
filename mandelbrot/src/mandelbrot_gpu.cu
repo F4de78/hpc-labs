@@ -44,10 +44,10 @@
 #ifndef ITERATIONS
     #define ITERATIONS 1000 // Maximum number of iterations
 #endif
+
 using namespace std;
 
 __global__ void mandelbrot(int *const image) {
-
     int col = blockIdx.x * blockDim.x + threadIdx.x;
     int row = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -57,33 +57,22 @@ __global__ void mandelbrot(int *const image) {
     
     int pos = row * WIDTH + col;
     
-    // if (pos < 0 || pos >= HEIGHT * WIDTH) {
-    //     return;
-    // }
-
     image[pos] = 0;
     
-    // const cuda::std::complex<double> c(col * STEP + MIN_X, row * STEP + MIN_Y);
     __ftype c_re = col * STEP + MIN_X;
     __ftype c_im = row * STEP + MIN_Y;
 
     __ftype z_re = 0.0;
     __ftype z_im = 0.0;
 
-    
-    // z = z^2 + c
-    // cuda::std::complex<double> z(0, 0);
-
     for (int i = 1; i <= ITERATIONS; i++)
     {
-            
         // xy	=	(a+ib)(c+id)	
         // 	    =	(ac-bd)+i(ad+bc).
         // a == c, b == d
         // ==> x * x = (a * a - b * b) + i (2 * a * b)
         __ftype z2_re = z_re * z_re - z_im * z_im;
         __ftype z2_im = 2.0 * z_re * z_im;
-
 
         // z = pow(z, 2) + c;
         z_re = z2_re + c_re;
