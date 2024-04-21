@@ -1,0 +1,188 @@
+\documentclass{article}
+
+\usepackage{natbib} % Required to change bibliography style to APA
+\usepackage{amsmath} % Required for some math elements 
+\usepackage{geometry}
+\usepackage[english]{babel}
+\usepackage{float}
+\usepackage {tikz}
+\usepackage{graphicx}
+\usepackage{comment}
+\usepackage[export]{adjustbox}
+\usetikzlibrary {positioning}
+\graphicspath{ {./images/} }
+\usepackage{hyperref}
+\usepackage{multicol}
+\usepackage{fancyvrb}
+\usepackage{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage{fancyvrb}
+\usepackage{xcolor}
+\usepackage{animate}
+\usepackage{array}
+\usepackage{minted}
+\usepackage{subfig}
+\usepackage{booktabs}
+\usepackage{mdframed}
+\usepackage{drawstack}
+
+\usemintedstyle{perldoc}
+
+\definecolor{bg}{rgb}{0.95,0.95,0.95}
+\definecolor{dark}{rgb}{0.25,0.25,0.25}
+
+\BeforeBeginEnvironment{verbatim}{\begin{mdframed}[backgroundcolor=bg]}}
+\AfterEndEnvironment{verbatim}{\end{mdframed}}
+\BeforeBeginEnvironment{minted}{\begin{mdframed}[backgroundcolor=bg]}}
+\AfterEndEnvironment{minted}{\end{mdframed}}
+
+
+
+\newcommand{\ip}[1]{{\fontfamily{pcr}\selectfont #1}}
+\definecolor{LightGray}{gray}{0.9}
+
+\parskip=0pt plus 1pt
+\parindent=15pt
+
+\setlength\parskip{1em plus 0.1em minus 0.2em}
+\setlength\parindent{0pt}
+
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=22mm,
+ top=22mm,
+ }
+
+
+
+
+\title{High Performance Computing \\ Final project \\ Mandelbrot  }
+\author{
+\begin{tabular}[t]{c@{\extracolsep{3em}}c@{\extracolsep{3em}}c} 
+Federico Fontana  & Filippo Siri & Marco Zucca \\
+s4835118@studenti.unige.it & s4819642@studenti.unige.it & s4828628@studenti.unige.it 
+\end{tabular}
+}
+\date{March 2024}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+This project aimed to optimise an implementation of an algorithm that generates the Mandelbrot set. To do so, we write a version of the algorithm to be executed by the GPU and other versions that leverage multi-processing and vectorization. We also added other optimisations to reduce intensive computation.
+
+\section{Setup}
+We run our implementation on a machine equipped with a 12th Gen Intel(R) Core(TM) i9-12900K CPU and an NVIDIA T400 GPU. \\
+
+The CPU has 24 core, 8 `e-core’ (no hyperthreading) and 8 `p-core’ (hyperthreading factor 2) and support AVX2 extension.
+
+\section{Hotspots}
+Before optimising the algorithm, we started looking at the code to identify where most of the computing is done. \\
+Since the code is quite simple, it is easy to identify the following hotspot:
+
+\begin{minted}{c}
+for (int pos = 0; pos < HEIGHT * WIDTH; pos++)
+    {
+        image[pos] = 0;
+
+        const int row = pos / WIDTH;
+        const int col = pos % WIDTH;
+        const complex<double> c(col * STEP + MIN_X, row * STEP + MIN_Y);
+
+        // z = z^2 + c
+        complex<double> z(0, 0);
+        for (int i = 1; i <= ITERATIONS; i++)
+        {
+            z = pow(z, 2) + c;
+
+            // If it is convergent
+            if (abs(z) >= 2)
+            {
+                image[pos] = i;
+                break;
+            }
+        }
+    }
+\end{minted}
+It can be seen that while there are no dependencies in the outermost loop, the calculations performed in the innermost loop depend on the previous iteration.
+%TODO: usare intel advx
+
+\section{CPU}
+\subsection{Parallelisation}
+%We parallelised the code using OpenMP APIs, by adding a directive above the first loop, that 
+We parallelized the outermost loop because, as mentioned in the previous section, it was the only loop where there were no dependencies.\\
+To do this, it was sufficient to add an instruction provided by the OpenMP APIs that allows to specify the type of schedule and number of threads to use.\\
+We can see the implementation in the following code:
+\begin{minted}{c}
+#pragma omp parallel for schedule(OMP_SCHEDULE) num_threads(THREAD_NO)
+for (int pos = 0; pos < HEIGHT * WIDTH; pos++)
+{
+    image[pos] = 0;
+
+    const int row = pos / WIDTH;
+    const int col = pos % WIDTH;
+    const complex<double> c(col * STEP + MIN_X, row * STEP + MIN_Y);
+
+    // z = z^2 + c
+    complex<double> z(0, 0);
+    for (int i = 1; i <= ITERATIONS; i++)
+    {
+        z = pow(z, 2) + c;
+
+        // If it is convergent
+        if (abs(z) >= 2)
+        {
+            image[pos] = i;
+            break;
+        }
+    }
+}
+\end{minted}
+
+\subsection{Vectorization}
+The intel compiler cannot vectorise the innermost loop because of the dependency seen above. \\ 
+Although no dependency is present, the outermost loop cannot be vectorised automatically using the Intel compiler either due to the presence of the \texttt{break} because this makes the number of iterations non-constant and varies according to a condition verified at runtime. \\
+Nevertheless, it is still possible to vectorize, by using Intel intrinsics because allows to manage the internal break manually. \\ 
+As said before, the CPU supports AVX2, so we can use at most 256-bit long vectors and leverage AVX2-specific instructions (wrapped by the intrinsics), like three operand fused-multiply-add (FMA3).
+
+
+
+Nell'implementazione effettuata utilizzando gli intrinsics abbiamo cambiato il ciclo esterno smettendo di iterare sulle singole celle, ma iterando su blocchi di celle che verranno vettorizzate insieme (4 celle utilizzando i double ed 8 celle utilizzando i float). \\
+Utilizzando la vettorizzazione abbiamo anche dovuto riscrivere le operazioni sui numeri complessi senza utilizzare il tipo complex. \\
+Infine abbiamo dovuto cambiare la condizione di uscita dal ciclo più interno ed il salvataggio dei valori nell'output. Si è trattata della parte più complicata perchè abbiamo dovuto proprio cambiare la logica utilizzata. \\
+Per uscire dal ciclo abbiamo creato una maschera dove veniva salvato 0 in ogni bit che rappresentava una determinata cella in un blocco quando il valore assoluto non era ancora maggiore di 4 ed 1 quando invece lo era, successivamente abbiamo trasformato questa maschera in un'interno composto nel seguente modo:
+\begin{minted}{c}
+FOR j := 0 to 3
+    i := j*64
+    IF a[i+63]
+	   dst[j] := 1
+    ELSE
+	   dst[j] := 0
+    FI
+ENDFOR
+dst[MAX:4] := 0
+\end{minted}
+Per salvare il valore solamente una volta abbiamo aggiunto una nuova variabile \texttt{mask} che permette di indicare se il valore di una cella presente nel blocco è stato salvato o no. \\
+Questa variabile è stata inizializzata con tutti i bit ad 1 e quando veniva salvato il valore di una cella i bit della maschera vengono messi a 0. Per farlo abbiamo utilizzato la seguente logica, dove indichiamo con pos i bit che fanno riferimento ad una determinata cella:
+\begin{minted}{c}
+mask[pos] = mask[pos] && (mask[pos] ^ abs2_gt_4[pos]) 
+\end{minted}
+Lo xor interno porta a 0 i bit di mask[pos] quando per la prima volta il valore di quella cella diventa maggiore di 4, l'and con il vecchio valore di mask[pos] permette di evitare che i bit di mask[pos] tornino ad 1 nell'iterazione successiva. \\
+Per salvare il valore dentro l'output abbiamo utilizzato la seguente logica:
+\begin{minted}{c}
+image[pos] = image[pos] || (abs2_gt_4[pos] && mask[pos] && current_step[pos])
+\end{minted}
+La seconda parte dell'or restituisce i bit che rappresentano lo step corrente solamente quando tutti quel valore è maggiore di 4 (abs2\_gt\_4[pos] contiene tutti 1) e non è ancora stato salvato un valore per quella cella (mask[pos] contiene tutti 1). Siccome la seconda parte dell'or restituisce 0 quando il valore è già stato salvato, per evitare di perdere il valore precedente, il valore viene messo in or con il valore precedente (possibile perchè all'inizio image[pos] contiene tutti i bit a 0).
+\subsection{Results}
+
+\section{GPU}
+
+\subsection{Results}
+
+
+\end{document}
