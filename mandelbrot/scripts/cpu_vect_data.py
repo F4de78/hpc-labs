@@ -9,9 +9,9 @@ RUNS = 3
 
 COMP = "icpx"
 CFLAGS = ["-fast", "-xHost", "-qopenmp"]
-SRC = "src/mandelbrot_cpu_omp.cpp"
+SRC = "src/mandelbrot_cpu_vect_omp.cpp"
 
-def compile(in_file_path: str, out_file_path: str, resolution: int, thread: int, scheduler: str):
+def compile(in_file_path: str, out_file_path: str, resolution: int, thread: int, fma: bool, ftype: str, scheduler: str):
 
     subprocess.run(
         [
@@ -22,6 +22,8 @@ def compile(in_file_path: str, out_file_path: str, resolution: int, thread: int,
             "bin/" + out_file_path,
             f"-DRESOLUTION={resolution}",
             f"-DTHREAD_NO={thread}",
+            "-DFMA" if fma else "",
+            f"-DFTYPE={ftype}",
             f"-DOMP_SCHEDULE={scheduler}"
         ]
     )
@@ -32,8 +34,8 @@ def compile(in_file_path: str, out_file_path: str, resolution: int, thread: int,
     return timing
 
 def main():
-    with open('report/data_cpu.csv', 'w',  newline='') as csvfile:
-        fieldnames = ['run', 'res', 'thread_no', 'omp_scheduler', 'time', 'speedup', 'efficiency']
+    with open('report/data_cpu_vect.csv', 'w',  newline='') as csvfile:
+        fieldnames = ['run', 'res', 'thread_no', 'fma', 'ftype', 'omp_scheduler', 'time', 'speedup', 'efficiency']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         time = dict()
@@ -41,20 +43,22 @@ def main():
         for run in range(1, RUNS + 1):
             for res in RESOLUTION:
                 if res in time:
-                    time[res].append(compile(SRC, f"mbcpu", res, 1, 'static'))
+                    time[res].append(compile(SRC, f"mbcpu", res, 1, False, 'double', 'static'))
                 else:
-                    time[res] = [compile(SRC, f"mbcpu", res, 1, 'static')]
+                    time[res] = [compile(SRC, f"mbcpu", res, 1, False, 'double', 'static')]
 
 
-        for thread_no, res, omp_scheduler in it.product(THREADS, RESOLUTION, ['dynamic','static']):
-            print(res, omp_scheduler, thread_no, time)
+        for thread_no, res, fma, ftype, omp_scheduler in it.product(THREADS, RESOLUTION, [True, False], ["float", "double"], ['dynamic','static']):
+            print(res, fma, ftype, omp_scheduler, thread_no, time)
             for run in range(1, RUNS + 1):
-                curr_time = compile(SRC, f"mbcpu", res, thread_no, omp_scheduler)
+                curr_time = compile(SRC, f"mbcpu", res, thread_no, fma, ftype, omp_scheduler)
                 speedup = (sum(time[res])/RUNS) / curr_time
                 efficiency = speedup / thread_no
                 writer.writerow({'run': run, \
                                  'res':res, \
                                  'thread_no':thread_no, \
+                                 'fma':fma, \
+                                 'ftype':ftype, \
                                  'omp_scheduler': omp_scheduler, \
                                  'time':curr_time, \
                                  'speedup':speedup, \
