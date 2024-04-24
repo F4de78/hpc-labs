@@ -30,7 +30,7 @@ def plot_time_inv(data):
     fig.savefig("report/img_cpu/time-inv.pdf")
 
 
-def plot_time(data):
+def plot_time(data, fname="time.pdf"):
     fig = plt.figure()
 
     for n in data["thread_no"].unique():
@@ -50,10 +50,10 @@ def plot_time(data):
     ax.set_title("Average execution time")
     ax.legend(title="#Thread")
     # plt.xscale('log')
-    fig.savefig("report/img_cpu/time.pdf")
+    fig.savefig(f"report/img_cpu/{fname}")
 
 
-def plot_speedup(data):
+def plot_speedup(data, fname="speedup.pdf"):
     fig = plt.figure()
     for n in data["res"].unique():
         ax = sns.lineplot(
@@ -71,10 +71,10 @@ def plot_speedup(data):
     ax.set_title("Average speedup")
     ax.legend(title="Resolution")
     # plt.xscale('log')
-    fig.savefig("report/img_cpu/speedup.pdf")
+    fig.savefig(f"report/img_cpu/{fname}")
 
 
-def plot_efficiency(data):
+def plot_efficiency(data, fname="efficiency.pdf"):
     fig = plt.figure()
     for n in data["res"].unique():
         ax = sns.lineplot(
@@ -92,7 +92,7 @@ def plot_efficiency(data):
     ax.set_title("Average efficiency")
     ax.legend(title="Resolution")
     # plt.xscale('log')
-    fig.savefig("report/img_cpu/efficiency.pdf")
+    fig.savefig(f"report/img_cpu/{fname}")
 
 
 def plot_diff(data, vect_data):
@@ -213,13 +213,16 @@ def main():
     vect_data = get_vect_data()
 
     print(vect_data)
-    plot_time(vect_data)
+    plot_time(vect_data, fname="time-vect.pdf")
     plot_time_inv(vect_data)
-    plot_speedup(vect_data)
-    plot_efficiency(vect_data)
+    plot_speedup(vect_data, fname="speedup-vect.pdf")
+    plot_efficiency(vect_data, fname="efficiency-vect.pdf")
 
     data = get_data()
     plot_diff(data, vect_data)
+    plot_time(data)
+    plot_speedup(data)
+    plot_efficiency(data)
 
     # Merge the two dataframes on 'thread_no' and 'res'
     merged_data = pd.merge(
