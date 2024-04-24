@@ -76,7 +76,7 @@ def main():
     print(data)
     data = data[
         (data["ftype"] == "float")
-        & (data["fma"] == True)
+        & (data["fma"] is True)
         & (data["omp_scheduler"] == "dynamic")
     ]
     print(data)
