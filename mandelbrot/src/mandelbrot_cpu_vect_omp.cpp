@@ -35,10 +35,6 @@ typedef float __ftype;
 
 #define STEP ((__ftype)RATIO_X / WIDTH)
 
-#ifndef DEGREE
-#define DEGREE 2 // Degree of the polynomial
-#endif
-
 #ifndef ITERATIONS
 #define ITERATIONS 1000 // Maximum number of iterations
 #endif

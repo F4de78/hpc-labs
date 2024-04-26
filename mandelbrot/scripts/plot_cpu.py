@@ -49,7 +49,6 @@ def plot_time(data, fname="time.pdf"):
     ax.set_xlabel("Resolution")
     ax.set_title("Average execution time")
     ax.legend(title="#Thread")
-    # plt.xscale('log')
     fig.savefig(f"report/img_cpu/{fname}")
 
 
@@ -66,11 +65,14 @@ def plot_speedup(data, fname="speedup.pdf"):
             dashes=False,
         )
     ax.set_xticks(data["thread_no"].unique())
+
     ax.set_ylabel("Average speedup")
     ax.set_xlabel("#Thread")
+
     ax.set_title("Average speedup")
+
     ax.legend(title="Resolution")
-    # plt.xscale('log')
+
     fig.savefig(f"report/img_cpu/{fname}")
 
 
@@ -91,7 +93,6 @@ def plot_efficiency(data, fname="efficiency.pdf"):
     ax.set_xlabel("#Thread")
     ax.set_title("Average efficiency")
     ax.legend(title="Resolution")
-    # plt.xscale('log')
     fig.savefig(f"report/img_cpu/{fname}")
 
 
@@ -114,7 +115,6 @@ def plot_diff(data, vect_data):
     ax.set_ylabel("Average time (ms)")
     ax.set_xlabel("Resolution")
     ax.set_title("Not vectorized")
-    # ax.legend(title="#Thread")
 
     for n in data["thread_no"].unique():
         ax = sns.lineplot(
@@ -171,7 +171,7 @@ def get_vect_data():
     data = data[
         (data["ftype"] == "float")
         & (data["fma"] == True)
-        & (data["omp_scheduler"] == "dynamic")
+        & (data["omp_schedule"] == "dynamic")
     ]
     print(data)
     data["average_time"] = data.groupby(["res", "thread_no"])["time"].transform("mean")
@@ -192,7 +192,7 @@ def get_vect_data():
 def get_data():
     data = pd.read_csv("report/data_cpu.csv")
     # only keep the optimal configuration
-    data = data[data["omp_scheduler"] == "dynamic"]
+    data = data[data["omp_schedule"] == "dynamic"]
     data["average_time"] = data.groupby(["res", "thread_no"])["time"].transform("mean")
 
     data = data[["res", "thread_no", "average_time"]].drop_duplicates()
