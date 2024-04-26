@@ -163,6 +163,46 @@ def plot_time_ratio(data):
 
     fig.savefig("report/img_cpu/time-ratio.pdf")
 
+def plot_vectorization_only_speedup(data, vect_data):
+    fig = plt.figure()
+
+    ax = sns.lineplot(
+        data=data[data["thread_no"] ==1],
+        x="res",
+        y="average_time",
+        label="Reference",
+        marker="o",
+        markers=True,
+        dashes=False,
+    )
+    ax = sns.lineplot(
+        data=vect_data[(vect_data["thread_no"] ==1) & (vect_data["fma"] == False)],
+        x="res",
+        y="average_time",
+        label="Vectorized",
+        marker="o",
+        markers=True,
+        dashes=False,
+    )
+    ax = sns.lineplot(
+        data=vect_data[(vect_data["thread_no"] ==1) & (vect_data["fma"] == True)],
+        x="res",
+        y="average_time",
+        label="Vectorized + FMA",
+        marker="o",
+        markers=True,
+        dashes=False,
+    )
+
+    ax.set_xticks(data["res"].unique())
+
+    ax.set_ylabel("Average time (ms)")
+    ax.set_xlabel("Resolution")
+    ax.set_title("Average execution time")
+    ax.legend(title="Program")
+    # plt.xscale('log')
+    fig.savefig("report/img_cpu/vect_gains.pdf")
+
 
 def get_vect_data():
     data = pd.read_csv("report/data_cpu_vect.csv")
@@ -170,16 +210,15 @@ def get_vect_data():
     print(data)
     data = data[
         (data["ftype"] == "float")
-        & (data["fma"] == True)
         & (data["omp_scheduler"] == "dynamic")
     ]
     print(data)
-    data["average_time"] = data.groupby(["res", "thread_no"])["time"].transform("mean")
+    data["average_time"] = data.groupby(["res", "thread_no", "fma"])["time"].transform("mean")
 
-    data = data[["res", "thread_no", "average_time"]].drop_duplicates()
+    data = data[["res", "thread_no", "average_time", "fma"]].drop_duplicates()
 
     data["speedup"] = data.apply(
-        lambda row: data[(data["res"] == row["res"]) & (data["thread_no"] == 1)][
+        lambda row: data[(data["res"] == row["res"]) & (data["thread_no"] == 1) & (data["fma"] == row["fma"])][
             "average_time"
         ].iloc[0]
         / row["average_time"],
@@ -211,22 +250,25 @@ def get_data():
 
 def main():
     vect_data = get_vect_data()
-
     print(vect_data)
-    plot_time(vect_data, fname="time-vect.pdf")
-    plot_time_inv(vect_data)
-    plot_speedup(vect_data, fname="speedup-vect.pdf")
-    plot_efficiency(vect_data, fname="efficiency-vect.pdf")
+
+    fma_vect_data = vect_data[vect_data["fma"] == True][["res", "thread_no", "average_time", "speedup", "efficiency"]].drop_duplicates()
+
+    plot_time(fma_vect_data, fname="time-vect.pdf")
+    plot_time_inv(fma_vect_data)
+    plot_speedup(fma_vect_data, fname="speedup-vect.pdf")
+    plot_efficiency(fma_vect_data, fname="efficiency-vect.pdf")
 
     data = get_data()
-    plot_diff(data, vect_data)
+    plot_diff(data, fma_vect_data)
+    plot_vectorization_only_speedup(data, vect_data)
     plot_time(data)
     plot_speedup(data)
     plot_efficiency(data)
 
     # Merge the two dataframes on 'thread_no' and 'res'
     merged_data = pd.merge(
-        data, vect_data, on=["thread_no", "res"], suffixes=("_data", "_vect_data")
+        data, fma_vect_data, on=["thread_no", "res"], suffixes=("_data", "_vect_data")
     )
 
     # Calculate the ratio and store it in a new column
