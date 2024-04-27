@@ -8,7 +8,7 @@ sns.set_theme()
 
 
 def plot_time_inv(data):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 6))
 
     for n in data["res"].unique():
         ax = sns.lineplot(
@@ -31,7 +31,7 @@ def plot_time_inv(data):
 
 
 def plot_time(data, fname="time.pdf"):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 6))
 
     for n in data["thread_no"].unique():
         ax = sns.lineplot(
@@ -49,12 +49,11 @@ def plot_time(data, fname="time.pdf"):
     ax.set_xlabel("Resolution")
     ax.set_title("Average execution time")
     ax.legend(title="#Thread")
-    # plt.xscale('log')
     fig.savefig(f"report/img_cpu/{fname}")
 
 
 def plot_speedup(data, fname="speedup.pdf"):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 6))
     for n in data["res"].unique():
         ax = sns.lineplot(
             data=data[data["res"] == n],
@@ -66,16 +65,19 @@ def plot_speedup(data, fname="speedup.pdf"):
             dashes=False,
         )
     ax.set_xticks(data["thread_no"].unique())
+
     ax.set_ylabel("Average speedup")
     ax.set_xlabel("#Thread")
+
     ax.set_title("Average speedup")
+
     ax.legend(title="Resolution")
-    # plt.xscale('log')
+
     fig.savefig(f"report/img_cpu/{fname}")
 
 
 def plot_efficiency(data, fname="efficiency.pdf"):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 6))
     for n in data["res"].unique():
         ax = sns.lineplot(
             data=data[data["res"] == n],
@@ -91,7 +93,6 @@ def plot_efficiency(data, fname="efficiency.pdf"):
     ax.set_xlabel("#Thread")
     ax.set_title("Average efficiency")
     ax.legend(title="Resolution")
-    # plt.xscale('log')
     fig.savefig(f"report/img_cpu/{fname}")
 
 
@@ -114,7 +115,6 @@ def plot_diff(data, vect_data):
     ax.set_ylabel("Average time (ms)")
     ax.set_xlabel("Resolution")
     ax.set_title("Not vectorized")
-    # ax.legend(title="#Thread")
 
     for n in data["thread_no"].unique():
         ax = sns.lineplot(
@@ -140,7 +140,7 @@ def plot_diff(data, vect_data):
 
 
 def plot_time_ratio(data):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 6))
 
     for n in data["res"].unique():
         ax = sns.lineplot(
@@ -163,11 +163,12 @@ def plot_time_ratio(data):
 
     fig.savefig("report/img_cpu/time-ratio.pdf")
 
-def plot_vectorization_only_speedup(data, vect_data):
+
+def plot_vectorization_only_speedup(data, vect_data, no_fma_data):
     fig = plt.figure()
 
     ax = sns.lineplot(
-        data=data[data["thread_no"] ==1],
+        data=data[data["thread_no"] == 1],
         x="res",
         y="average_time",
         label="Reference",
@@ -176,7 +177,7 @@ def plot_vectorization_only_speedup(data, vect_data):
         dashes=False,
     )
     ax = sns.lineplot(
-        data=vect_data[(vect_data["thread_no"] ==1) & (vect_data["fma"] == False)],
+        data=no_fma_data[no_fma_data["thread_no"] == 1],
         x="res",
         y="average_time",
         label="Vectorized",
@@ -185,7 +186,7 @@ def plot_vectorization_only_speedup(data, vect_data):
         dashes=False,
     )
     ax = sns.lineplot(
-        data=vect_data[(vect_data["thread_no"] ==1) & (vect_data["fma"] == True)],
+        data=vect_data[vect_data["thread_no"] == 1],
         x="res",
         y="average_time",
         label="Vectorized + FMA",
@@ -200,25 +201,60 @@ def plot_vectorization_only_speedup(data, vect_data):
     ax.set_xlabel("Resolution")
     ax.set_title("Average execution time")
     ax.legend(title="Program")
-    # plt.xscale('log')
+
     fig.savefig("report/img_cpu/vect_gains.pdf")
+
+
+def plot_single_threaded_time_ratios(data):
+    fig = plt.figure(figsize=(10, 6))
+
+    ax = sns.lineplot(
+        data=data[data["thread_no"] == 1],
+        x="res",
+        y="time_ratio",
+        label="Vect + FMA / Baseline",
+        marker="o",
+        markers=True,
+        dashes=False,
+    )
+
+    ax = sns.lineplot(
+        data=data[data["thread_no"] == 1],
+        x="res",
+        y="time_ratio_no_fma",
+        label="Vect / Baseline",
+        marker="o",
+        markers=True,
+        dashes=False,
+    )
+    ax.set_xticks(data["res"].unique())
+
+    ax.set_ylabel("Average time ratio")
+    ax.set_xlabel("Resolution")
+    ax.set_title("Average single threaded time ratio")
+    ax.legend(title="Code version")
+
+    plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
+
+    fig.savefig("report/img_cpu/time-single-thread-ratio.pdf")
 
 
 def get_vect_data():
     data = pd.read_csv("report/data_cpu_vect.csv")
+
     # only keep the optimal configuration
-    print(data)
     data = data[
         (data["ftype"] == "float")
-        & (data["omp_scheduler"] == "dynamic")
+        & (data["fma"] == True)
+        & (data["omp_schedule"] == "dynamic")
     ]
-    print(data)
-    data["average_time"] = data.groupby(["res", "thread_no", "fma"])["time"].transform("mean")
 
-    data = data[["res", "thread_no", "average_time", "fma"]].drop_duplicates()
+    data["average_time"] = data.groupby(["res", "thread_no"])["time"].transform("mean")
+
+    data = data[["res", "thread_no", "average_time"]].drop_duplicates()
 
     data["speedup"] = data.apply(
-        lambda row: data[(data["res"] == row["res"]) & (data["thread_no"] == 1) & (data["fma"] == row["fma"])][
+        lambda row: data[(data["res"] == row["res"]) & (data["thread_no"] == 1)][
             "average_time"
         ].iloc[0]
         / row["average_time"],
@@ -228,10 +264,38 @@ def get_vect_data():
     return data
 
 
+def get_vect_data_no_fma():
+    data = pd.read_csv("report/data_cpu_vect.csv")
+
+    # only keep the optimal configuration
+    data = data[
+        (data["ftype"] == "float")
+        & (data["fma"] == False)
+        & (data["omp_schedule"] == "dynamic")
+    ]
+
+    data["average_time"] = data.groupby(["res", "thread_no"])["time"].transform("mean")
+
+    data = data[["res", "thread_no", "average_time", "fma"]].drop_duplicates()
+
+    data["speedup"] = data.apply(
+        lambda row: data[
+            (data["res"] == row["res"])
+            & (data["thread_no"] == 1)
+            & (data["fma"] == row["fma"])
+        ]["average_time"].iloc[0]
+        / row["average_time"],
+        axis=1,
+    )
+    data["efficiency"] = data["speedup"] / data["thread_no"]
+    return data
+
+
 def get_data():
     data = pd.read_csv("report/data_cpu.csv")
+
     # only keep the optimal configuration
-    data = data[data["omp_scheduler"] == "dynamic"]
+    data = data[data["omp_schedule"] == "dynamic"]
     data["average_time"] = data.groupby(["res", "thread_no"])["time"].transform("mean")
 
     data = data[["res", "thread_no", "average_time"]].drop_duplicates()
@@ -249,26 +313,25 @@ def get_data():
 
 
 def main():
-    vect_data = get_vect_data()
-    print(vect_data)
-
-    fma_vect_data = vect_data[vect_data["fma"] == True][["res", "thread_no", "average_time", "speedup", "efficiency"]].drop_duplicates()
-
-    plot_time(fma_vect_data, fname="time-vect.pdf")
-    plot_time_inv(fma_vect_data)
-    plot_speedup(fma_vect_data, fname="speedup-vect.pdf")
-    plot_efficiency(fma_vect_data, fname="efficiency-vect.pdf")
-
     data = get_data()
-    plot_diff(data, fma_vect_data)
-    plot_vectorization_only_speedup(data, vect_data)
+    vect_data = get_vect_data()
+    vect_no_fma = get_vect_data_no_fma()
+
+    print("vect_data:\n", vect_data)
+    plot_time(vect_data, fname="time-vect.pdf")
+    plot_time_inv(vect_data)
+    plot_speedup(vect_data, fname="speedup-vect.pdf")
+    plot_efficiency(vect_data, fname="efficiency-vect.pdf")
+
+    plot_diff(data, vect_data)
+    plot_vectorization_only_speedup(data, vect_data, vect_no_fma)
     plot_time(data)
     plot_speedup(data)
     plot_efficiency(data)
 
     # Merge the two dataframes on 'thread_no' and 'res'
     merged_data = pd.merge(
-        data, fma_vect_data, on=["thread_no", "res"], suffixes=("_data", "_vect_data")
+        data, vect_data, on=["thread_no", "res"], suffixes=("_data", "_vect_data")
     )
 
     # Calculate the ratio and store it in a new column
@@ -276,6 +339,15 @@ def main():
         merged_data["average_time_data"] / merged_data["average_time_vect_data"]
     )
     plot_time_ratio(merged_data)
+
+    merged_data = pd.merge(merged_data, vect_no_fma, on=["thread_no", "res"])
+
+    # Calculate the ratio and store it in a new column
+    merged_data["time_ratio_no_fma"] = (
+        merged_data["average_time_data"] / merged_data["average_time"]
+    )
+
+    plot_single_threaded_time_ratios(merged_data)
 
 
 if __name__ == "__main__":

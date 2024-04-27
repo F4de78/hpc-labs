@@ -1,6 +1,5 @@
 import subprocess
 import itertools as it
-import logging
 import csv
 
 RESOLUTION = [500, 1000, 1500, 2000]
@@ -17,7 +16,7 @@ def compile(
     thread: int,
     fma: bool,
     ftype: str,
-    scheduler: str,
+    schedule: str,
 ):
     out_file = "vect_cpu"
 
@@ -32,7 +31,7 @@ def compile(
             f"-DTHREAD_NO={thread}",
             "-DFMA" if fma else "",
             f"-DFTYPE={ftype}",
-            f"-DOMP_SCHEDULE={scheduler}",
+            f"-DOMP_SCHEDULE={schedule}",
         ]
     )
 
@@ -50,23 +49,22 @@ def main():
             "thread_no",
             "fma",
             "ftype",
-            "omp_scheduler",
+            "omp_schedule",
             "time",
         ]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        time = dict()
 
-        for thread_no, res, fma, ftype, omp_scheduler in it.product(
+        for thread_no, res, fma, ftype, omp_schedule in it.product(
             THREADS,
             RESOLUTION,
             [True, False],  # FMA
             ["float", "double"],  # FTYPE
             ["dynamic", "static"],  # OMP_SCHEDULE
         ):
-            print(f"{res=}, {fma=}, {ftype=}, {omp_scheduler=}, {thread_no=}, {time=}")
+            print(f"{res=}, {fma=}, {ftype=}, {omp_schedule=}, {thread_no=}")
             for run in range(1, RUNS + 1):
-                curr_time = compile(res, thread_no, fma, ftype, omp_scheduler)
+                curr_time = compile(res, thread_no, fma, ftype, omp_schedule)
                 writer.writerow(
                     {
                         "run": run,
@@ -74,7 +72,7 @@ def main():
                         "thread_no": thread_no,
                         "fma": fma,
                         "ftype": ftype,
-                        "omp_scheduler": omp_scheduler,
+                        "omp_schedule": omp_schedule,
                         "time": curr_time,
                     }
                 )
