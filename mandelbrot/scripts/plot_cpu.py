@@ -8,7 +8,7 @@ sns.set_theme()
 
 
 def plot_time_inv(data):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 6))
 
     for n in data["res"].unique():
         ax = sns.lineplot(
@@ -31,7 +31,7 @@ def plot_time_inv(data):
 
 
 def plot_time(data, fname="time.pdf"):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 6))
 
     for n in data["thread_no"].unique():
         ax = sns.lineplot(
@@ -53,7 +53,7 @@ def plot_time(data, fname="time.pdf"):
 
 
 def plot_speedup(data, fname="speedup.pdf"):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 6))
     for n in data["res"].unique():
         ax = sns.lineplot(
             data=data[data["res"] == n],
@@ -77,7 +77,7 @@ def plot_speedup(data, fname="speedup.pdf"):
 
 
 def plot_efficiency(data, fname="efficiency.pdf"):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 6))
     for n in data["res"].unique():
         ax = sns.lineplot(
             data=data[data["res"] == n],
@@ -140,7 +140,7 @@ def plot_diff(data, vect_data):
 
 
 def plot_time_ratio(data):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 6))
 
     for n in data["res"].unique():
         ax = sns.lineplot(
@@ -165,7 +165,7 @@ def plot_time_ratio(data):
 
 
 def plot_single_threaded_time_ratios(data):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 6))
 
     ax = sns.lineplot(
         data=data[data["thread_no"] == 1],

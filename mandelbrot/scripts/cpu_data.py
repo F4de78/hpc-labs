@@ -47,12 +47,12 @@ def main():
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
 
-        for thread_no, res, omp_scheduler in it.product(
+        for thread_no, res, omp_schedule in it.product(
             THREADS,
             RESOLUTION,
             ["dynamic", "static"],  # OMP_SCHEDULE
         ):
-            print(f"{res=}, {omp_scheduler=}, {thread_no=}")
+            print(f"{res=}, {omp_schedule=}, {thread_no=}")
             for run in range(1, RUNS + 1):
                 curr_time = compile(res, thread_no, omp_schedule)
                 writer.writerow(
