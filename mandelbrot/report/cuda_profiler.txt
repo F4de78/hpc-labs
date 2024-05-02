@@ -1,0 +1,20 @@
+nvprof bin/mbgpu report/cuda_out
+Width: 3000, Height: 2000, Step: 0.001
+==9741== NVPROF is profiling process 9741, command: bin/mbgpu report/cuda_out
+Time elapsed: 1245 ms.
+==9741== Profiling application: bin/mbgpu report/cuda_out
+==9741== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   99.55%  974.56ms         1  974.56ms  974.56ms  974.56ms  mandelbrot(int*)
+                    0.45%  4.4226ms         1  4.4226ms  4.4226ms  4.4226ms  [CUDA memcpy DtoH]
+      API calls:   92.77%  979.07ms         1  979.07ms  979.07ms  979.07ms  cudaMemcpy
+                    7.15%  75.487ms         1  75.487ms  75.487ms  75.487ms  cudaMalloc
+                    0.03%  277.29us       101  2.7450us     314ns  123.89us  cuDeviceGetAttribute
+                    0.02%  261.77us         1  261.77us  261.77us  261.77us  cuDeviceTotalMem
+                    0.01%  154.89us         1  154.89us  154.89us  154.89us  cudaFree
+                    0.01%  59.146us         1  59.146us  59.146us  59.146us  cuDeviceGetName
+                    0.00%  16.197us         1  16.197us  16.197us  16.197us  cudaLaunchKernel
+                    0.00%  14.846us         1  14.846us  14.846us  14.846us  cuDeviceGetPCIBusId
+                    0.00%  4.3970us         3  1.4650us     465ns  3.3860us  cuDeviceGetCount
+                    0.00%  2.0740us         2  1.0370us     375ns  1.6990us  cuDeviceGet
+                    0.00%     749ns         1     749ns     749ns     749ns  cuDeviceGetUuid
