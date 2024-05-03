@@ -4,8 +4,7 @@
 #include <complex.h>
 #include <chrono>
 
-#define FTYPE double
-#if FTYPE == double
+#ifdef DOUBLE
     typedef double __ftype;
 #else
     typedef float __ftype;

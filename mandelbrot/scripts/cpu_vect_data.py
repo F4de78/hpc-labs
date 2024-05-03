@@ -30,7 +30,7 @@ def compile(
             f"-DRESOLUTION={resolution}",
             f"-DTHREAD_NO={thread}",
             "-DFMA" if fma else "",
-            f"-DFTYPE={ftype}",
+            "-DDOUBLE" if ftype == "double" else "",
             f"-DOMP_SCHEDULE={schedule}",
         ]
     )

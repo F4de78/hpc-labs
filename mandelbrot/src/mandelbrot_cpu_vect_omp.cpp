@@ -5,11 +5,7 @@
 #include <omp.h>
 #include <immintrin.h>
 
-#ifndef FTYPE
-#define FTYPE double
-#endif
-
-#if FTYPE == double
+#ifdef DOUBLE
 typedef double __ftype;
 #else
 typedef float __ftype;
@@ -79,7 +75,7 @@ int main(int argc, char **argv)
 
     const int block_size = HEIGHT * WIDTH / block_count;
 
-#if FTYPE == double
+#ifdef DOUBLE
 
     __m256d step = _mm256_set1_pd(STEP);
     __m256d min_x = _mm256_set1_pd(MIN_X);
@@ -172,7 +168,7 @@ int main(int argc, char **argv)
 
             // image[pos] = image[pos] || (abs2_gt_4[pos] && mask[pos] && current_step[pos])
             // mask[pos] = mask[pos] && (mask[pos] ^ abs2_gt_4[pos])
-            results = _mm256_or_si256(results, _mm256_and_si256(_mm256_and_si256((__m256d)abs2_gt_4, mask), current_step));
+            results = _mm256_or_si256(results, _mm256_and_si256(_mm256_and_si256(abs2_gt_4, mask), current_step));
             mask = _mm256_and_si256(mask, _mm256_xor_si256(mask, abs2_gt_4));
 
             int all_diverge_mask = _mm256_movemask_pd(abs2_gt_4);
@@ -193,6 +189,7 @@ int main(int argc, char **argv)
     __m256 min_x = _mm256_set1_ps(MIN_X);
     __m256 min_y = _mm256_set1_ps(MIN_Y);
 
+#pragma omp parallel for schedule(OMP_SCHEDULE) num_threads(THREAD_NO)
     for (int pos = 0; pos < HEIGHT * WIDTH; pos += 8)
     {
         __m256 c_re = _mm256_set_ps(
@@ -223,10 +220,10 @@ int main(int argc, char **argv)
             (pos + 0) / WIDTH);
 
 #ifdef FMA
-        c_im = _mm256_fmadd_pd(c_im, step, min_y);
+        c_im = _mm256_fmadd_ps(c_im, step, min_y);
 #else
-        c_im = _mm256_mul_pd(c_im, step);
-        c_im = _mm256_add_pd(c_im, min_y);
+        c_im = _mm256_mul_ps(c_im, step);
+        c_im = _mm256_add_ps(c_im, min_y);
 #endif
 
         // set vectors to 0
@@ -234,6 +231,9 @@ int main(int argc, char **argv)
         __m256 z_im = _mm256_setzero_ps();
 
         __m256i results = _mm256_setzero_si256();
+
+        // Initialize mask to all ones
+        __m256i mask = _mm256_set1_epi32(-1);
 
         // z = z^2 + c
         for (int i = 1; i <= ITERATIONS; i++)
@@ -273,12 +273,16 @@ int main(int argc, char **argv)
 
             // image[pos] = image[pos] || (abs2_gt_4[pos] && mask[pos] && current_step[pos])
             // mask[pos] = mask[pos] && (mask[pos] ^ abs2_gt_4[pos])
-            results = _mm256_or_si256(results, _mm256_and_si256(_mm256_and_si256((__m256d)abs2_gt_4, mask), current_step));
+            results = _mm256_or_si256(results, _mm256_and_si256(_mm256_and_si256(abs2_gt_4, mask), current_step));
             mask = _mm256_and_si256(mask, _mm256_xor_si256(mask, abs2_gt_4));
 
+            int all_diverge_mask = _mm256_movemask_ps(abs2_gt_4);
+
             // If all of the image pixels have diverged, then break out of the loop
-            if (_mm256_testz_ps(abs2_gt_4, _mm256_set1_ps(0)))
+            if (all_diverge_mask == 0xFF)
+            {
                 break;
+            }
         }
 
         _mm256_store_si256((__m256i *)&image[pos], results);
