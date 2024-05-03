@@ -21,7 +21,6 @@
 
 #define STEP ((double)RATIO_X / WIDTH)
 
-#define DEGREE 2        // Degree of the polynomial
 #define ITERATIONS 1000 // Maximum number of iterations
 
 #ifndef THREAD_NO
