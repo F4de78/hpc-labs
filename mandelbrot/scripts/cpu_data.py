@@ -4,7 +4,7 @@ import csv
 
 RESOLUTION = [500, 1000, 1500, 2000]
 THREADS = [1, 2, 4, 8, 16, 24]
-RUNS = 3
+RUNS = 10
 
 COMP = "icpx"
 CFLAGS = ["-fast", "-xHost", "-qopenmp"]

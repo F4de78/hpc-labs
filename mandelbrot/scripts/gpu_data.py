@@ -6,7 +6,7 @@ import csv
 RESOLUTION = [500, 1000, 1500, 2000]
 THREADS_X = [1,2,4,8,16]
 THREADS_Y = [1,2,4,8,16]
-RUNS = 1
+RUNS = 10
 
 COMP = "nvc++"
 CFLAGS = []
