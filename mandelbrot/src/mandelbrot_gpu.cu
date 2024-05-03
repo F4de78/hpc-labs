@@ -1,19 +1,20 @@
 #include <iostream>
 #include <fstream>
+//#include <complex>
 #include <complex.h>
 #include <chrono>
 
 #ifdef DOUBLE
-typedef double __ftype;
+    typedef double __ftype;
 #else
-typedef float __ftype;
+    typedef float __ftype;
 #endif
 
 #ifndef THREADS_X
-#define THREADS_X 16
+    #define THREADS_X 16
 #endif
 #ifndef THREADS_Y
-#define THREADS_Y 16
+    #define THREADS_Y 16
 #endif
 
 // Ranges of the set
@@ -28,33 +29,35 @@ typedef float __ftype;
 
 // Image size
 #ifndef RESOLUTION
-#define RESOLUTION 1000
+    #define RESOLUTION 1000
 #endif
 #define WIDTH (RATIO_X * RESOLUTION)
 #define HEIGHT (RATIO_Y * RESOLUTION)
 
 #define STEP ((__ftype)RATIO_X / WIDTH)
 
+#ifndef DEGREE
+    #define DEGREE 2        // Degree of the polynomial
+#endif
+
 #ifndef ITERATIONS
-#define ITERATIONS 1000 // Maximum number of iterations
+    #define ITERATIONS 1000 // Maximum number of iterations
 #endif
 
 using namespace std;
 
-__global__ void mandelbrot(int *const image)
-{
+__global__ void mandelbrot(int *const image) {
     int col = blockIdx.x * blockDim.x + threadIdx.x;
     int row = blockIdx.y * blockDim.y + threadIdx.y;
 
-    if (col >= WIDTH || row >= HEIGHT)
-    {
+    if (col >= WIDTH || row >= HEIGHT) {
         return;
     }
-
+    
     int pos = row * WIDTH + col;
-
+    
     image[pos] = 0;
-
+    
     __ftype c_re = col * STEP + MIN_X;
     __ftype c_im = row * STEP + MIN_Y;
 
@@ -63,7 +66,7 @@ __global__ void mandelbrot(int *const image)
 
     for (int i = 1; i <= ITERATIONS; i++)
     {
-        // xy	=	(a+ib)(c+id)
+        // xy	=	(a+ib)(c+id)	
         // 	    =	(ac-bd)+i(ad+bc).
         // a == c, b == d
         // ==> x * x = (a * a - b * b) + i (2 * a * b)
@@ -86,20 +89,18 @@ __global__ void mandelbrot(int *const image)
     }
 }
 
-void handle_error(cudaError_t err)
-{
-    if (err != cudaSuccess)
-    {
+void handle_error(cudaError_t err){
+    if(err != cudaSuccess){
         cerr << "GPUassert: " << cudaGetErrorString(err) << endl;
         exit(err);
     }
 }
 
 int main(int argc, char **argv)
-{
+{   
     int *const image = new int[HEIGHT * WIDTH];
     const int size = HEIGHT * WIDTH * sizeof(int);
-
+    
     int *image_gpu = nullptr;
 
     const auto start = chrono::steady_clock::now();
@@ -108,11 +109,11 @@ int main(int argc, char **argv)
 
     dim3 threadsPerBlock(THREADS_X, THREADS_Y);
     dim3 numBlocks((WIDTH + threadsPerBlock.x - 1) / threadsPerBlock.x, (HEIGHT + threadsPerBlock.y - 1) / threadsPerBlock.y);
-
+   
     mandelbrot<<<numBlocks, threadsPerBlock>>>(image_gpu);
 
-    handle_error(cudaMemcpy(image, image_gpu, size, cudaMemcpyDeviceToHost));
-
+    handle_error(cudaMemcpy(image, image_gpu, size, cudaMemcpyDeviceToHost));    
+    
     const auto end = chrono::steady_clock::now();
     cout << "Time elapsed: "
          << chrono::duration_cast<chrono::milliseconds>(end - start).count()
