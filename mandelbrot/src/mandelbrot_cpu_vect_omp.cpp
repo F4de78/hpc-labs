@@ -67,8 +67,11 @@ void print_m256d(__m256d mm)
 
 int main(int argc, char **argv)
 {
+    #ifdef DOUBLE
     long long int *const image = new long long int[HEIGHT * WIDTH];
-
+    #else
+    int* const image = new int[HEIGHT * WIDTH];
+    #endif
     const auto start = chrono::steady_clock::now();
 
     const int block_count = THREAD_NO * 10;
