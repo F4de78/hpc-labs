@@ -263,7 +263,7 @@ def plot_double_vs_float(float_data, double_data):
     )
     ax.set_xticks(float_data["res"].unique())
 
-    ax.set_ylabel("Average execution time")
+    ax.set_ylabel("Average execution time (ms)")
     ax.set_xlabel("Resolution")
     ax.set_title("Average single threaded time ratio")
     ax.legend(title="Code version")
