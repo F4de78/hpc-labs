@@ -276,7 +276,7 @@ def get_vect_data():
 
     # only keep the optimal configuration
     data = data[
-        (data["ftype"] == "float")
+        (data["ftype"] == "double")
         & (data["fma"] == True)
         & (data["omp_schedule"] == "dynamic")
     ]
@@ -296,12 +296,12 @@ def get_vect_data():
     return data
 
 
-def get_double_vect_data():
+def get_float_vect_data():
     data = pd.read_csv("report/data_cpu_vect.csv")
 
     # only keep the optimal configuration
     data = data[
-        (data["ftype"] == "double")
+        (data["ftype"] == "float")
         & (data["fma"] == True)
         & (data["omp_schedule"] == "dynamic")
     ]
@@ -326,7 +326,7 @@ def get_vect_data_no_fma():
 
     # only keep the optimal configuration
     data = data[
-        (data["ftype"] == "float")
+        (data["ftype"] == "double")
         & (data["fma"] == False)
         & (data["omp_schedule"] == "dynamic")
     ]
@@ -373,7 +373,7 @@ def main():
     data = get_data()
     vect_data = get_vect_data()
     vect_no_fma = get_vect_data_no_fma()
-    vect_double_data = get_double_vect_data()
+    vect_float_data = get_float_vect_data()
 
     print("vect_data:\n", vect_data)
     plot_time(vect_data, fname="time-vect.pdf")
@@ -381,7 +381,7 @@ def main():
     plot_speedup(vect_data, fname="speedup-vect.pdf")
     plot_efficiency(vect_data, fname="efficiency-vect.pdf")
 
-    plot_double_vs_float(vect_data, vect_double_data)
+    plot_double_vs_float(vect_float_data, vect_data)
 
     plot_diff(data, vect_data)
     plot_vectorization_only_speedup(data, vect_data, vect_no_fma)
