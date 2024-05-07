@@ -25,6 +25,19 @@ def plot_line(data, n: int):
     ax.set_ylabel('Average time (ms)')
     fig.savefig(f"report/img_gpu/lineplot_{n}.pdf")
 
+# plot a graph where for every resolution on the x there is the pair (thread_x, thread_y) and on the y the average gpu time for the tuple (thread_x, thread_y)
+def plot_gpu_sqare(data):
+    fig, ax = plt.subplots(figsize=(20, 15))
+    data = data.pivot(index=['resolution', 'thread_x'], columns='thread_y', values='average_time_gpu').reset_index()
+    data = data.melt(id_vars=['resolution', 'thread_x'], var_name='thread_y', value_name='average_time_gpu')
+    sns.lineplot(data=data, x="thread_x", y="average_time_gpu", hue="resolution", ax=ax, marker="o", palette="tab10")
+    ax.set_title(f"Lineplot of execution times for every resolution")
+    ax.legend(title='resolution')
+    ax.set_xlabel('#Thread(x,y)')
+    ax.set_ylabel('Average time (ms)')
+    fig.savefig(f"report/img_gpu/lineplot_all.pdf")
+
+
 def plot_line_3d(data, n: int):
     data = data[data['resolution'] == n]
     fig = plt.figure(figsize=(10, 10))
@@ -40,13 +53,15 @@ def plot_line_3d(data, n: int):
 
 def main():
     data = pd.read_csv('report/data_gpu.csv')
+    data = data[data['ftype'] == "double"]
     data['average_time_gpu'] = data.groupby(['resolution', 'thread_x', 'thread_y'])['time_gpu'].transform('mean')
     data = data[['resolution', 'thread_x', 'thread_y', 'average_time_gpu']].drop_duplicates()
     data.to_csv('report/data_graph_gpu.csv', index=False)
-    for n in data['resolution'].unique():
-        plot_heatmap(data, n)
-        plot_line(data, n)
-        plot_line_3d(data, n)
+    #for n in data['resolution'].unique():
+        # plot_heatmap(data, n)
+        # plot_line(data, n)
+    plot_gpu_sqare(data)
+        # plot_line_3d(data, n)
 
 if __name__ == "__main__":
     main()
