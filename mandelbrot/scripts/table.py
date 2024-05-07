@@ -60,10 +60,37 @@ def fma(df):
 
     print(latex_table)
 
+def fma_ratio(data_cpu, data_cpu_vect):
+    # Filter the data
+    # Filter the data
+    data_cpu = data_cpu[(data_cpu['thread_no'] == 1) & (data_cpu['omp_schedule'] == 'dynamic')]
+    data_cpu_vect = data_cpu_vect[(data_cpu_vect['thread_no'] == 1) & (data_cpu_vect['omp_schedule'] == 'dynamic') & (data_cpu_vect['ftype'] == 'double')]
+
+    # Group the data and calculate the mean of time
+    grouped_cpu = data_cpu.groupby('res')['time'].mean()
+    grouped_cpu_vect = data_cpu_vect.groupby(['res', 'fma'])['time'].mean().unstack()
+
+    # Merge the two grouped dataframes on res
+    merged = pd.merge(grouped_cpu, grouped_cpu_vect, on='res')
+
+    # Calculate the ratio
+    merged['with fma'] = (merged['time'] / merged[True]) * 100
+    merged['without fma'] = (merged['time'] / merged[False]) * 100
+
+    # Create a new dataframe with res, with fma and without fma columns
+    output = merged[['with fma', 'without fma']]
+
+    # Convert the dataframe to a LaTeX table
+    latex_table = output.to_latex()
+
+    print(latex_table)
+
+
 data_cpu = pd.read_csv('../report/data_cpu.csv')
 data_cpu_vect = pd.read_csv('../report/data_cpu_vect.csv')
 
 
 # static_dynamic(data_cpu)
 #float_double(data_cpu_vect)
-fma(data_cpu_vect)
+#fma(data_cpu_vect)
+fma_ratio(data_cpu, data_cpu_vect)
