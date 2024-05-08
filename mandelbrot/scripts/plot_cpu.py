@@ -243,7 +243,7 @@ def plot_double_vs_float(float_data, double_data):
     fig = plt.figure()
 
     ax = sns.lineplot(
-        data=float_data[float_data["thread_no"] == 24],
+        data=float_data[float_data["thread_no"] == 1],
         x="res",
         y="average_time",
         label="float",
@@ -253,7 +253,7 @@ def plot_double_vs_float(float_data, double_data):
     )
 
     ax = sns.lineplot(
-        data=double_data[double_data["thread_no"] == 24],
+        data=double_data[double_data["thread_no"] == 1],
         x="res",
         y="average_time",
         label="double",
@@ -265,7 +265,7 @@ def plot_double_vs_float(float_data, double_data):
 
     ax.set_ylabel("Average execution time (ms)")
     ax.set_xlabel("Resolution")
-    ax.set_title("Average single threaded time ratio")
+    ax.set_title("Average single threaded time")
     ax.legend(title="Code version")
 
     fig.savefig("report/img_cpu/float_vs_double.pdf")
