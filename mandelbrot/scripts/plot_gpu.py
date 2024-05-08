@@ -108,8 +108,8 @@ def main():
     ].drop_duplicates()
     data.to_csv("report/data_graph_gpu.csv", index=False)
 
-    # for n in data['resolution'].unique():
-    #     plot_heatmap(data, n)
+    for n in data['resolution'].unique():
+        plot_heatmap(data, n)
     #     plot_line(data, n)
     plot_time(data)
     plot_gpu_square(data)
