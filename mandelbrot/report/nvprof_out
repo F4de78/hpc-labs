@@ -1,0 +1,73 @@
+S4835118@wk001:~/Downloads/hpc-labs-master/mandelbrot/scripts$ sh nvprof.sh 
+==45669== NVPROF is profiling process 45669, command: ../bin/mandelbrot_gpu_500_double ../report/mandelbrot_gpu_500_double
+Time elapsed: 732 ms.
+==45669== Profiling application: ../bin/mandelbrot_gpu_500_double ../report/mandelbrot_gpu_500_double
+==45669== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   99.69%  453.18ms         1  453.18ms  453.18ms  453.18ms  mandelbrot(int*)
+                    0.31%  1.3871ms         1  1.3871ms  1.3871ms  1.3871ms  [CUDA memcpy DtoH]
+      API calls:   83.58%  454.50ms         1  454.50ms  454.50ms  454.50ms  cudaMemcpy
+                   16.33%  88.776ms         1  88.776ms  88.776ms  88.776ms  cudaMalloc
+                    0.03%  174.30us       101  1.7250us     193ns  70.444us  cuDeviceGetAttribute
+                    0.03%  161.66us         1  161.66us  161.66us  161.66us  cuDeviceTotalMem
+                    0.02%  85.388us         1  85.388us  85.388us  85.388us  cudaFree
+                    0.01%  37.585us         1  37.585us  37.585us  37.585us  cuDeviceGetName
+                    0.00%  21.192us         1  21.192us  21.192us  21.192us  cuDeviceGetPCIBusId
+                    0.00%  19.665us         1  19.665us  19.665us  19.665us  cudaLaunchKernel
+                    0.00%  2.7060us         3     902ns     340ns  1.9470us  cuDeviceGetCount
+                    0.00%  1.4220us         2     711ns     224ns  1.1980us  cuDeviceGet
+                    0.00%     452ns         1     452ns     452ns     452ns  cuDeviceGetUuid
+==45688== NVPROF is profiling process 45688, command: ../bin/mandelbrot_gpu_1000_double ../report/mandelbrot_gpu_1000_double
+Time elapsed: 887 ms.
+==45688== Profiling application: ../bin/mandelbrot_gpu_1000_double ../report/mandelbrot_gpu_1000_double
+==45688== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   99.34%  662.55ms         1  662.55ms  662.55ms  662.55ms  mandelbrot(int*)
+                    0.66%  4.3873ms         1  4.3873ms  4.3873ms  4.3873ms  [CUDA memcpy DtoH]
+      API calls:   91.38%  667.00ms         1  667.00ms  667.00ms  667.00ms  cudaMemcpy
+                    8.55%  62.418ms         1  62.418ms  62.418ms  62.418ms  cudaMalloc
+                    0.02%  171.56us       101  1.6980us     206ns  71.205us  cuDeviceGetAttribute
+                    0.02%  152.00us         1  152.00us  152.00us  152.00us  cuDeviceTotalMem
+                    0.01%  93.744us         1  93.744us  93.744us  93.744us  cudaFree
+                    0.00%  36.024us         1  36.024us  36.024us  36.024us  cuDeviceGetName
+                    0.00%  15.066us         1  15.066us  15.066us  15.066us  cudaLaunchKernel
+                    0.00%  4.1770us         1  4.1770us  4.1770us  4.1770us  cuDeviceGetPCIBusId
+                    0.00%  2.4880us         3     829ns     244ns  1.7630us  cuDeviceGetCount
+                    0.00%  1.2830us         2     641ns     221ns  1.0620us  cuDeviceGet
+                    0.00%     468ns         1     468ns     468ns     468ns  cuDeviceGetUuid
+==45705== NVPROF is profiling process 45705, command: ../bin/mandelbrot_gpu_1500_double ../report/mandelbrot_gpu_1500_double
+Time elapsed: 1721 ms.
+==45705== Profiling application: ../bin/mandelbrot_gpu_1500_double ../report/mandelbrot_gpu_1500_double
+==45705== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   99.34%  1.47570s         1  1.47570s  1.47570s  1.47570s  mandelbrot(int*)
+                    0.66%  9.8773ms         1  9.8773ms  9.8773ms  9.8773ms  [CUDA memcpy DtoH]
+      API calls:   96.53%  1.48565s         1  1.48565s  1.48565s  1.48565s  cudaMemcpy
+                    3.42%  52.713ms         1  52.713ms  52.713ms  52.713ms  cudaMalloc
+                    0.02%  274.99us         1  274.99us  274.99us  274.99us  cuDeviceTotalMem
+                    0.02%  265.57us       101  2.6290us     359ns  107.71us  cuDeviceGetAttribute
+                    0.01%  109.07us         1  109.07us  109.07us  109.07us  cudaFree
+                    0.00%  60.603us         1  60.603us  60.603us  60.603us  cuDeviceGetName
+                    0.00%  16.393us         1  16.393us  16.393us  16.393us  cudaLaunchKernel
+                    0.00%  15.572us         1  15.572us  15.572us  15.572us  cuDeviceGetPCIBusId
+                    0.00%  4.4630us         3  1.4870us     437ns  3.2090us  cuDeviceGetCount
+                    0.00%  2.3750us         2  1.1870us     520ns  1.8550us  cuDeviceGet
+                    0.00%     789ns         1     789ns     789ns     789ns  cuDeviceGetUuid
+==45722== NVPROF is profiling process 45722, command: ../bin/mandelbrot_gpu_2000_double ../report/mandelbrot_gpu_2000_double
+Time elapsed: 2910 ms.
+==45722== Profiling application: ../bin/mandelbrot_gpu_2000_double ../report/mandelbrot_gpu_2000_double
+==45722== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   99.37%  2.60843s         1  2.60843s  2.60843s  2.60843s  mandelbrot(int*)
+                    0.63%  16.667ms         1  16.667ms  16.667ms  16.667ms  [CUDA memcpy DtoH]
+      API calls:   97.87%  2.62517s         1  2.62517s  2.62517s  2.62517s  cudaMemcpy
+                    2.10%  56.371ms         1  56.371ms  56.371ms  56.371ms  cudaMalloc
+                    0.01%  274.93us         1  274.93us  274.93us  274.93us  cuDeviceTotalMem
+                    0.01%  266.49us       101  2.6380us     356ns  107.73us  cuDeviceGetAttribute
+                    0.01%  143.95us         1  143.95us  143.95us  143.95us  cudaFree
+                    0.00%  60.211us         1  60.211us  60.211us  60.211us  cuDeviceGetName
+                    0.00%  17.838us         1  17.838us  17.838us  17.838us  cuDeviceGetPCIBusId
+                    0.00%  16.094us         1  16.094us  16.094us  16.094us  cudaLaunchKernel
+                    0.00%  4.4310us         3  1.4770us     569ns  2.9990us  cuDeviceGetCount
+                    0.00%  2.3490us         2  1.1740us     402ns  1.9470us  cuDeviceGet
+                    0.00%     700ns         1     700ns     700ns     700ns  cuDeviceGetUuid
