@@ -162,9 +162,9 @@ def result_vect(data_cpu):
     draw_result(data_cpu)
 
 def time_gpu(df):
-    df = df[(df['ftype'] == 'double') & (df['thread_x'] == df['thread_y'])]
+    df = df[(df['ftype'] == 'double')]
     df = df.groupby(['resolution', 'thread_x', 'thread_y'])['time_gpu'].mean().reset_index()
-    df = df[['resolution', 'thread_x', 'time_gpu']]
+    df = df[['resolution', 'thread_x', 'thread_y', 'time_gpu']]
     df = df.astype(int)
 
     latex_table = df.to_latex(index=False )
