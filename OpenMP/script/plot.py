@@ -22,6 +22,9 @@ def plot_time(data):
     ax.set_ylabel("Average time (s)")
     ax.set_xlabel("N")
     ax.set_title("Average execution time")
+
+    ax.legend(title="#Thread")
+
     fig.savefig("report/img/time.pdf")
 
 
@@ -41,6 +44,9 @@ def plot_speedup(data):
     ax.set_ylabel("Average speedup")
     ax.set_xlabel("#Thread")
     ax.set_title("Average speedup")
+
+    ax.legend(title="N")
+
     fig.savefig("report/img/speedup.pdf")
 
 
@@ -60,6 +66,9 @@ def plot_efficiency(data):
     ax.set_ylabel("Average efficiency")
     ax.set_xlabel("#Thread")
     ax.set_title("Average efficiency")
+
+    ax.legend(title="N")
+
     fig.savefig("report/img/efficiency.pdf")
 
 
