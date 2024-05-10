@@ -10,50 +10,52 @@
 #define PI2 6.28318530718
 #define R_ERROR 0.01
 
-int DFT(int idft, double* xr, double* xi, double* Xr_o, double* Xi_o, int N);
-int fillInput(double* xr, double* xi, int N);
-int setOutputZero(double* Xr_o, double* Xi_o, int N);
-int checkResults(double* xr, double* xi, double* xr_check, double* xi_check, double* Xr_o, double* Xi_r, int N);
-int printResults(double* xr, double* xi, int N);
+#ifndef N
+#define N 10000
+#endif
+
+int DFT(int idft, double* xr, double* xi, double* Xr_o, double* Xi_o);
+int fillInput(double* xr, double* xi);
+int setOutputZero(double* Xr_o, double* Xi_o);
+int checkResults(double* xr, double* xi, double* xr_check, double* xi_check, double* Xr_o, double* Xi_r);
+int printResults(double* xr, double* xi);
 
 
 int main(int argc, char* argv[]){
-// size of input array
-    int N = 10000;
     printf("DFTW calculation with N = %d \n",N);
 
     double* xr = (double*) malloc (N *sizeof(double));
     double* xi = (double*) malloc (N *sizeof(double));
-    fillInput(xr,xi,N);
+    fillInput(xr,xi);
 
 
     double* xr_check = (double*) malloc (N *sizeof(double));
     double* xi_check = (double*) malloc (N *sizeof(double));
-    setOutputZero(xr_check,xi_check,N);
+    setOutputZero(xr_check,xi_check);
 
     double* Xr_o = (double*) malloc (N *sizeof(double));
     double* Xi_o = (double*) malloc (N *sizeof(double));
-    setOutputZero(Xr_o,Xi_o,N);
+    setOutputZero(Xr_o,Xi_o);
 
     // start timer
     double start_time = omp_get_wtime();
 
     // DFT
     int idft = 1;
-    DFT(idft,xr,xi,Xr_o,Xi_o,N);
+    DFT(idft,xr,xi,Xr_o,Xi_o);
     // IDFT
     idft = -1;
-    DFT(idft,Xr_o,Xi_o,xr_check,xi_check,N);
+    DFT(idft,Xr_o,Xi_o,xr_check,xi_check);
 
     // stop timer
     double run_time = omp_get_wtime() - start_time;
     printf("DFTW computation in %f seconds\n",run_time);
 
     // check the results: easy to make correctness errors with openMP
-    checkResults(xr,xi,xr_check,xi_check,Xr_o, Xi_o, N);
+    checkResults(xr,xi,xr_check,xi_check,Xr_o, Xi_o);
     // print the results of the DFT
     #ifdef DEBUG
-      printResults(Xr_o,Xi_o,N);
+      printResults(Xr_o,Xi_o);
       #endif
 
       // take out the garbage
@@ -66,16 +68,25 @@ int main(int argc, char* argv[]){
 
 // DFT/IDFT routine
 // idft: 1 direct DFT, -1 inverse IDFT (Inverse DFT)
-int DFT(int idft, double* xr, double* xi, double* Xr_o, double* Xi_o, int N){
+int DFT(int idft, double* xr, double* xi, double* Xr_o, double* Xi_o){
   int k, n;
   for (k=0 ; k<N ; k++)
   {
       for (n=0 ; n<N ; n++)  {
-        // Real part of X[k]
+          #ifndef CACHE_TRIG
+          // Real part of X[k]
           Xr_o[k] += xr[n] * cos(n * k * PI2 / N) + idft*xi[n]*sin(n * k * PI2 / N);
           // Imaginary part of X[k]
           Xi_o[k] += -idft*xr[n] * sin(n * k * PI2 / N) + xi[n] * cos(n * k * PI2 / N);
+          #else
+          double c = cos(n * k * PI2 / N);
+			    double s = sin(n * k * PI2 / N);
 
+          // Real part of X[k]
+          Xr_o[k] += xr[n] * c + idft * xi[n] * s;
+          // Imaginary part of X[k]
+          Xi_o[k] += -idft * xr[n] * s + xi[n] * c;
+          #endif
       }
   }
 
@@ -92,7 +103,7 @@ int DFT(int idft, double* xr, double* xi, double* Xr_o, double* Xi_o, int N){
 // set the initial signal
 // be careful with this
 // rand() is NOT thread safe in case
-int fillInput(double* xr, double* xi, int N){
+int fillInput(double* xr, double* xi){
   int n;
   srand(time(0));
   for(n=0; n < 100000;n++) // get some random number first
@@ -109,7 +120,7 @@ int fillInput(double* xr, double* xi, int N){
 }
 
 // set to zero the output vector
-int setOutputZero(double* Xr_o, double* Xi_o, int N){
+int setOutputZero(double* Xr_o, double* Xi_o){
   int n;
   for(n=0; n < N;n++){
      Xr_o[n] = 0.0;
@@ -119,7 +130,7 @@ int setOutputZero(double* Xr_o, double* Xi_o, int N){
 }
 
 // check if x = IDFT(DFT(x))
-int checkResults(double* xr, double* xi, double* xr_check, double* xi_check, double* Xr_o, double* Xi_r, int N){
+int checkResults(double* xr, double* xi, double* xr_check, double* xi_check, double* Xr_o, double* Xi_r){
   int n;
   for(n=0; n < N;n++){
     if (fabs(xr[n] - xr_check[n]) > R_ERROR)
@@ -133,7 +144,7 @@ int checkResults(double* xr, double* xi, double* xr_check, double* xi_check, dou
 }
 
 // print the results of the DFT
-int printResults(double* xr, double* xi, int N){
+int printResults(double* xr, double* xi){
   int n;
   for(n=0; n < N;n++)
       printf("Xre[%d] = %f, Xim[%d] = %f \n", n, xr[n], n, xi[n]);
