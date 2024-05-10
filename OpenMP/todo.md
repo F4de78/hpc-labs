@@ -1,5 +1,0 @@
-# TODO
-
-- Allineare le malloc (slide 24 vectorization)
-- Usare pragma simd (slide 56 vectorization)
-- restrict
