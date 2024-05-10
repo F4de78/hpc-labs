@@ -6,7 +6,7 @@ sns.set_theme()
 
 
 def plot_time(data):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 7))
 
     for thread_no in data["thread_no"].unique():
         ax = sns.lineplot(
@@ -22,6 +22,8 @@ def plot_time(data):
     ax.set_ylabel("Average time (s)")
     ax.set_xlabel("N")
     ax.set_title("Average execution time")
+
+    ax.tick_params(axis="x", labelrotation=45)
 
     ax.legend(title="#Thread")
 
