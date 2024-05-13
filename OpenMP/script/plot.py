@@ -111,28 +111,19 @@ def plot_double_vs_float(data):
 
 def main():
     data = pd.read_csv("report/data.csv")
-    data["average_time"] = data.groupby(["n", "thread_no", "ftype"])["time"].transform(
-        "mean"
-    )
-    data = data[["n", "thread_no", "ftype", "average_time"]].drop_duplicates()
+    data["average_time"] = data.groupby(["n", "thread_no"])["time"].transform("mean")
+    data = data[["n", "thread_no", "average_time"]].drop_duplicates()
     data["speedup"] = data.apply(
-        lambda row: data[
-            (data["n"] == row["n"])
-            & (data["thread_no"] == 1)
-            & (data["ftype"] == row["ftype"])
-        ]["average_time"].iloc[0]
+        lambda row: data[(data["n"] == row["n"]) & (data["thread_no"] == 1)][
+            "average_time"
+        ].iloc[0]
         / row["average_time"],
         axis=1,
     )
     data["efficiency"] = data["speedup"] / data["thread_no"]
 
-    plot_double_vs_float(data)
-
     with pd.option_context("display.max_rows", None):
-        print("FLOAT only data:\n", data[data["ftype"] == "float"])
-        print("DOUBLE only data:\n", data[data["ftype"] == "double"])
-
-    data = data[data["ftype"] == "float"]
+        print(data)
 
     plot_time(data)
     plot_speedup(data)

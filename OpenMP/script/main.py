@@ -9,7 +9,8 @@ RUNS = 10
 COMP = "icc"
 CFLAGS = ["-fopenmp", "-std=c99", "-O3", "-march=alderlake"]
 
-def compile(n: int, thread_no: int, use_double: bool):
+
+def compile(n: int, thread_no: int):
     in_file_path = "src/omp_homework_vect.c"
     out_file_path = "dft"
 
@@ -23,7 +24,6 @@ def compile(n: int, thread_no: int, use_double: bool):
             "bin/" + out_file_path,
             f"-DN={n}",
             f"-DTHREAD_NO={thread_no}",
-            "-DDOUBLE" if use_double else "",
         ]
     )
 
@@ -33,22 +33,20 @@ def compile(n: int, thread_no: int, use_double: bool):
     print(f"TIMING: {float(timing)}")
     return float(timing)
 
+
 def main():
-    with open('report/data.csv', 'w',  newline='') as csvfile:
-        fieldnames = ['run', 'n', 'thread_no', 'ftype', 'time']
+    with open("report/data.csv", "w", newline="") as csvfile:
+        fieldnames = ["run", "n", "thread_no", "ftype", "time"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        for n, thread_no, use_double in it.product(NS, THREAD_NOS, [False, True]):
-            print(f"{n=}, {thread_no=}, {use_double=}")
+        for n, thread_no in it.product(NS, THREAD_NOS):
+            print(f"{n=}, {thread_no=}")
             for run in range(1, RUNS + 1):
-                curr_time = compile(n, thread_no, use_double)
-                writer.writerow({
-                    'run': run, 
-                    'n':n, 
-                    'thread_no':thread_no, 
-                    'ftype': "double" if use_double else "float", 
-                    'time':curr_time
-                })
-               
+                curr_time = compile(n, thread_no)
+                writer.writerow(
+                    {"run": run, "n": n, "thread_no": thread_no, "time": curr_time}
+                )
+
+
 if __name__ == "__main__":
     main()

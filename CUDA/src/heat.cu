@@ -6,24 +6,25 @@
 #define I2D(row_len, c, r) ((r) * (row_len) + (c))
 
 #ifndef NI
-    #define NI 1000
+#define NI 1000
 #endif
 #ifndef NJ
-    #define NJ 1000
+#define NJ 1000
 #endif
 #ifndef THREADS_X
-    #define THREADS_X 16
+#define THREADS_X 16
 #endif
 #ifndef THREADS_Y
-    #define THREADS_Y 16
+#define THREADS_Y 16
 #endif
 
-
-__global__ void step_kernel_mod(int ni, int nj, float fact, float *temp_in, float *temp_out) {
+__global__ void step_kernel_mod(int ni, int nj, float fact, float *temp_in, float *temp_out)
+{
   int i = blockIdx.x * blockDim.x + threadIdx.x;
   int j = blockIdx.y * blockDim.y + threadIdx.y;
 
-  if (i >= 1 && i < ni - 1 && j >= 1 && j < nj - 1) {
+  if (i >= 1 && i < ni - 1 && j >= 1 && j < nj - 1)
+  {
     int i00 = I2D(ni, i, j);
     int im10 = I2D(ni, i - 1, j);
     int ip10 = I2D(ni, i + 1, j);
@@ -41,8 +42,8 @@ void step_kernel_ref(int ni, int nj, float fact, float *temp_in, float *temp_out
 {
   int i00, im10, ip10, i0m1, i0p1;
   float d2tdx2, d2tdy2;
-  //printf("%d %d\n", ni, nj);
-  // loop over all points in domain (except boundary)
+  // printf("%d %d\n", ni, nj);
+  //  loop over all points in domain (except boundary)
   for (int j = 1; j < nj - 1; j++)
   {
     for (int i = 1; i < ni - 1; i++)
@@ -65,9 +66,11 @@ void step_kernel_ref(int ni, int nj, float fact, float *temp_in, float *temp_out
   }
 }
 
-void handle_error(cudaError_t err){
-  if(err != cudaSuccess){
-    fprintf(stderr,"GPUassert: %s\n", cudaGetErrorString(err));
+void handle_error(cudaError_t err)
+{
+  if (err != cudaSuccess)
+  {
+    fprintf(stderr, "GPUassert: %s\n", cudaGetErrorString(err));
     exit(err);
   }
 }
@@ -76,7 +79,7 @@ int main()
 {
   int istep;
   int nstep = 200; // number of time steps
-  
+
   float time;
   cudaEvent_t start, stop;
 
@@ -87,7 +90,7 @@ int main()
 
   float *temp1_ref, *temp2_ref, *temp1, *temp2, *temp_tmp, *cpu_arr;
 
-  const int size = ni * nj * sizeof(float);
+  const size_t size = ni * nj * sizeof(float);
 
   temp1_ref = (float *)malloc(size);
   temp2_ref = (float *)malloc(size);
@@ -129,7 +132,7 @@ int main()
   // https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/
   dim3 threadsPerBlock(THREADS_X, THREADS_Y); // 1024 threads per block
   dim3 numBlocks((ni + threadsPerBlock.x - 1) / threadsPerBlock.x, (nj + threadsPerBlock.y - 1) / threadsPerBlock.y);
-  
+
   handle_error(cudaEventCreate(&start));
   handle_error(cudaEventCreate(&stop));
   handle_error(cudaEventRecord(start, 0));
@@ -154,8 +157,8 @@ int main()
   for (int i = 0; i < ni * nj; ++i)
   {
     if (abs(cpu_arr[i] - temp1_ref[i]) > maxError)
-    { 
-      //printf("cpu_arr: %f - temp1_ref:%f\n",cpu_arr[i] ,temp1_ref[i] );
+    {
+      // printf("cpu_arr: %f - temp1_ref:%f\n",cpu_arr[i] ,temp1_ref[i] );
       maxError = abs(cpu_arr[i] - temp1_ref[i]);
     }
   }

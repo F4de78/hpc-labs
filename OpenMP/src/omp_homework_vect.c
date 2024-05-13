@@ -11,43 +11,33 @@
 #define N 10000
 #endif
 
-#ifdef DOUBLE
-#define FTYPE double
-#define SIN sin
-#define COS cos
-#else
-#define FTYPE float
-#define SIN sinf
-#define COS cosf
-#endif
-
-#define FSIZE sizeof(FTYPE)
+#define DSIZE sizeof(double)
 
 #ifndef THREAD_NO
 #define THREAD_NO 1
 #endif
 
-int DFT(int idft, FTYPE xr[restrict], FTYPE xi[restrict], FTYPE Xr_o[restrict], FTYPE Xi_o[restrict]);
-int fillInput(FTYPE *xr, FTYPE *xi);
-int setOutputZero(FTYPE *Xr_o, FTYPE *Xi_o);
-int checkResults(FTYPE *xr, FTYPE *xi, FTYPE *xr_check, FTYPE *xi_check, FTYPE *Xr_o, FTYPE *Xi_r);
-int printResults(FTYPE *xr, FTYPE *xi);
+int DFT(int idft, double xr[restrict], double xi[restrict], double Xr_o[restrict], double Xi_o[restrict]);
+int fillInput(double *xr, double *xi);
+int setOutputZero(double *Xr_o, double *Xi_o);
+int checkResults(double *xr, double *xi, double *xr_check, double *xi_check, double *Xr_o, double *Xi_r);
+int printResults(double *xr, double *xi);
 
 int main(int argc, char *argv[])
 {
     // size of input array
     printf("DFTW calculation with N = %d \n", N);
 
-    FTYPE *xr = (FTYPE *)_mm_malloc(N * sizeof(FTYPE), FSIZE);
-    FTYPE *xi = (FTYPE *)_mm_malloc(N * sizeof(FTYPE), FSIZE);
+    double *xr = (double *)_mm_malloc(N * DSIZE, DSIZE);
+    double *xi = (double *)_mm_malloc(N * DSIZE, DSIZE);
     fillInput(xr, xi);
 
-    FTYPE *xr_check = (FTYPE *)_mm_malloc(N * sizeof(FTYPE), FSIZE);
-    FTYPE *xi_check = (FTYPE *)_mm_malloc(N * sizeof(FTYPE), FSIZE);
+    double *xr_check = (double *)_mm_malloc(N * DSIZE, DSIZE);
+    double *xi_check = (double *)_mm_malloc(N * DSIZE, DSIZE);
     setOutputZero(xr_check, xi_check);
 
-    FTYPE *Xr_o = (FTYPE *)_mm_malloc(N * sizeof(FTYPE), FSIZE);
-    FTYPE *Xi_o = (FTYPE *)_mm_malloc(N * sizeof(FTYPE), FSIZE);
+    double *Xr_o = (double *)_mm_malloc(N * DSIZE, DSIZE);
+    double *Xi_o = (double *)_mm_malloc(N * DSIZE, DSIZE);
     setOutputZero(Xr_o, Xi_o);
 
     // start timer
@@ -85,21 +75,21 @@ int main(int argc, char *argv[])
 
 // DFT/IDFT routine
 // idft: 1 direct DFT, -1 inverse IDFT (Inverse DFT)
-int DFT(int idft, FTYPE xr[restrict], FTYPE xi[restrict], FTYPE Xr_o[restrict], FTYPE Xi_o[restrict])
+int DFT(int idft, double xr[restrict], double xi[restrict], double Xr_o[restrict], double Xi_o[restrict])
 {
 
-    __assume_aligned(Xr_o, FSIZE);
-    __assume_aligned(Xi_o, FSIZE);
-    __assume_aligned(xr, FSIZE);
-    __assume_aligned(xi, FSIZE);
+    __assume_aligned(Xr_o, DSIZE);
+    __assume_aligned(Xi_o, DSIZE);
+    __assume_aligned(xr, DSIZE);
+    __assume_aligned(xi, DSIZE);
 
 #pragma omp parallel for schedule(dynamic) num_threads(THREAD_NO)
     for (int k = 0; k < N; k++)
     {
         for (int n = 0; n < N; n++)
         {
-            FTYPE c = COS(n * k * PI2 / N);
-            FTYPE s = SIN(n * k * PI2 / N);
+            double c = cos(n * k * PI2 / N);
+            double s = sin(n * k * PI2 / N);
 
             // Real part of X[k]
             Xr_o[k] += xr[n] * c + idft * xi[n] * s;
@@ -123,7 +113,7 @@ int DFT(int idft, FTYPE xr[restrict], FTYPE xi[restrict], FTYPE Xr_o[restrict], 
 // set the initial signal
 // be careful with this
 // rand() is NOT thread safe in case
-int fillInput(FTYPE *xr, FTYPE *xi)
+int fillInput(double *xr, double *xi)
 {
     int n;
     srand(time(0));
@@ -133,8 +123,8 @@ int fillInput(FTYPE *xr, FTYPE *xi)
     for (n = 0; n < N; n++)
     {
         // Generate random discrete-time signal x in range (-1,+1)
-        xr[n] = ((FTYPE)(2.0 * rand()) / RAND_MAX) - 1.0;
-        xi[n] = ((FTYPE)(2.0 * rand()) / RAND_MAX) - 1.0;
+        xr[n] = ((double)(2.0 * rand()) / RAND_MAX) - 1.0;
+        xi[n] = ((double)(2.0 * rand()) / RAND_MAX) - 1.0;
         // constant real signal
         // xr[n] = 1.0;
         // xi[n] = 0.0;
@@ -143,7 +133,7 @@ int fillInput(FTYPE *xr, FTYPE *xi)
 }
 
 // set to zero the output vector
-int setOutputZero(FTYPE *Xr_o, FTYPE *Xi_o)
+int setOutputZero(double *Xr_o, double *Xi_o)
 {
     int n;
     for (n = 0; n < N; n++)
@@ -155,7 +145,7 @@ int setOutputZero(FTYPE *Xr_o, FTYPE *Xi_o)
 }
 
 // check if x = IDFT(DFT(x))
-int checkResults(FTYPE *xr, FTYPE *xi, FTYPE *xr_check, FTYPE *xi_check, FTYPE *Xr_o, FTYPE *Xi_r)
+int checkResults(double *xr, double *xi, double *xr_check, double *xi_check, double *Xr_o, double *Xi_r)
 {
     int n;
     for (n = 0; n < N; n++)
@@ -170,7 +160,7 @@ int checkResults(FTYPE *xr, FTYPE *xi, FTYPE *xr_check, FTYPE *xi_check, FTYPE *
 }
 
 // print the results of the DFT
-int printResults(FTYPE *xr, FTYPE *xi)
+int printResults(double *xr, double *xi)
 {
     int n;
     for (n = 0; n < N; n++)
