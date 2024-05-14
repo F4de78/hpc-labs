@@ -28,16 +28,16 @@ int main(int argc, char *argv[])
     // size of input array
     printf("DFTW calculation with N = %d \n", N);
 
-    double *xr = (double *)_mm_malloc(N * DSIZE, DSIZE);
-    double *xi = (double *)_mm_malloc(N * DSIZE, DSIZE);
+    double *xr = (double *)malloc(N * DSIZE);
+    double *xi = (double *)malloc(N * DSIZE);
     fillInput(xr, xi);
 
-    double *xr_check = (double *)_mm_malloc(N * DSIZE, DSIZE);
-    double *xi_check = (double *)_mm_malloc(N * DSIZE, DSIZE);
+    double *xr_check = (double *)malloc(N * DSIZE);
+    double *xi_check = (double *)malloc(N * DSIZE);
     setOutputZero(xr_check, xi_check);
 
-    double *Xr_o = (double *)_mm_malloc(N * DSIZE, DSIZE);
-    double *Xi_o = (double *)_mm_malloc(N * DSIZE, DSIZE);
+    double *Xr_o = (double *)malloc(N * DSIZE);
+    double *Xi_o = (double *)malloc(N * DSIZE);
     setOutputZero(Xr_o, Xi_o);
 
     // start timer
@@ -63,12 +63,12 @@ int main(int argc, char *argv[])
 #endif
 
     // take out the garbage
-    _mm_free(xr);
-    _mm_free(xi);
-    _mm_free(Xi_o);
-    _mm_free(Xr_o);
-    _mm_free(xr_check);
-    _mm_free(xi_check);
+    free(xr);
+    free(xi);
+    free(Xi_o);
+    free(Xr_o);
+    free(xr_check);
+    free(xi_check);
 
     return 1;
 }
@@ -77,12 +77,6 @@ int main(int argc, char *argv[])
 // idft: 1 direct DFT, -1 inverse IDFT (Inverse DFT)
 int DFT(int idft, double xr[restrict], double xi[restrict], double Xr_o[restrict], double Xi_o[restrict])
 {
-
-    __assume_aligned(Xr_o, DSIZE);
-    __assume_aligned(Xi_o, DSIZE);
-    __assume_aligned(xr, DSIZE);
-    __assume_aligned(xi, DSIZE);
-
 #pragma omp parallel for schedule(dynamic) num_threads(THREAD_NO)
     for (int k = 0; k < N; k++)
     {
